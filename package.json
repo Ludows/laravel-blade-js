@@ -1,0 +1,14 @@
+{
+  "name": "my-laravel-blade",
+  "version": "0.0.1",
+  "description": "A laravel blade compiler to html",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ludovic Cointrel",
+  "license": "MIT",
+  "dependencies": {
+    "wink-tokenizer": "^5.0.0"
+  }
+}
