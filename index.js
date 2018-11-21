@@ -41,6 +41,8 @@ class bladeRender {
       let codeAr = tokens.filter((token) => {
         if(token.tag === "directive with no closures" || token.tag === "directive with closures") {
           token._bldConfig = { views: this.options.views, extension : this.options.extension, name: name }
+          token._bldConfig._typeof = token.tag === "directive with no closures" ? 'autoclose' : 'asblock'
+
           return token
         }
       })
@@ -53,11 +55,12 @@ class bladeRender {
         // INIT FIRST COMPILATION
         arr.forEach((comp) => {
           if(this.directives[comp.name] != undefined) {
-            var compiled = this.directives[comp.name](comp);
-            bladeParser.builder('append', compiled);
+            this.directives[comp.name](comp, bladeParser);
+          }
+          else {
+            bladeParser.handleError();
           }
           // else on handle les directives non existantes...
-
         })
 
       })

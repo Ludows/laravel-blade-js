@@ -1,7 +1,7 @@
 
 class parser {
   constructor() {
-
+    this.html = '';
   }
   which_name(entry) {
     var base_name = '';
@@ -37,6 +37,16 @@ class parser {
 
     return params;
   }
+  normalizeParams(entry) {
+    if(typeof entry === 'array') {
+      entry.forEach((param) => {
+        return param.replace('.', '/').replace("'", '').replace("'", '')
+      })
+    }
+    else {
+      return entry.replace('.', '/').replace("'", '').replace("'", '')
+    }
+  }
   parse(array, callback) {
     var the_return = new Array();
 
@@ -47,6 +57,9 @@ class parser {
       the_return[i].params = this.getParams(code.value)
       the_return[i].content = code.value
       the_return[i]._bld = code._bldConfig
+      the_return[i]._bld._execPathParam = code._bldConfig._typeof === "autoclose" && this.getParams(code.value).length > 1  ?  this.getParams(code.value)[1] : null
+      the_return[i]._bld._codeToExec = code._bldConfig._typeof === "asblock" && this.getParams(code.value).length < 1  ?  code.value.match(/<\s*a[^>]*>(.*?)<\s*\s*a>/g) : null
+
     })
 
     if(callback && typeof callback === 'function') {
@@ -54,18 +67,29 @@ class parser {
     }
   }
   builder(cmd, code) {
-    let txt = '';
     switch (cmd) {
       case 'append':
-        txt += code
+        this.html += code
         break;
       case 'replace':
         // txt += code
         break;
+      case 'find':
+        var re = new RegExp(code, 'g');
+        // console.log(re)
+        return this.html.match(re);
+        break;
+      case 'html':
+        return this.html;
+        break;
       default:
-        return txt;
+
         break;
     }
+    // console.log('text code', this.html)
+  }
+  handleError() {
+
   }
   compile(ar, func) {
 
