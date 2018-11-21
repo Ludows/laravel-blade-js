@@ -10,9 +10,9 @@ var directives = {
     parser.builder('append', extend_rt);
   },
   section: (obj, parser) => {
-    console.log('section start', obj)
+    // console.log('section start', obj)
     var test_in_parent_view = parser.builder('find', '@yield\\(\''+ parser.normalizeParams(obj.params[0]) +'\'\\)' )
-    console.log('test', test_in_parent_view)
+    // console.log('test', test_in_parent_view)
     if(test_in_parent_view.length > 0) {
       // Le bloc existe dans la vue parente
       switch (obj._bld._typeof) {

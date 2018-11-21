@@ -58,8 +58,9 @@ class parser {
       the_return[i].content = code.value
       the_return[i]._bld = code._bldConfig
       the_return[i]._bld._execPathParam = code._bldConfig._typeof === "autoclose" && this.getParams(code.value).length > 1  ?  this.getParams(code.value)[1] : null
-      the_return[i]._bld._codeToExec = code._bldConfig._typeof === "asblock" && this.getParams(code.value).length < 1  ?  code.value.match(/<\s*a[^>]*>(.*?)<\s*\s*a>/g) : null
+      the_return[i]._bld._codeToExec = code._bldConfig._typeof === "asblock" && this.getParams(code.value).length <= 1  ?  code.value.match(/\w+ |<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g) : null
 
+      // console.log('code', code.value.match(/\w+ |<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g))
     })
 
     if(callback && typeof callback === 'function') {
