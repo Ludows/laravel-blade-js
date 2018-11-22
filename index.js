@@ -54,8 +54,7 @@ class bladeRender {
         console.log('html generated', html);
         // you must to tokenize another to check blade directive
         // var esprima = require('esprima')
-        var Parser = require('html-dom-parser');
-        var test = Parser(html)
+        
         console.log('htmlTokens', test)
       })
 
