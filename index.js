@@ -1,4 +1,5 @@
-let myTokenizer = require('./libs/tokenizer.conf.js');
+let myTokenizer = require('./libs/tokenizer.conf.js').instance;
+let myHTMLTokenizer = require('./libs/tokenizer.conf.js').instance2;
 let parser = require('./libs/parser');
 let directiveManager = require('./libs/directives');
 let helpersManager = require('./libs/helpers');
@@ -49,21 +50,15 @@ class bladeRender {
       // blade parser start here
       let bladeParser = new parser();
       // return an array of object
-      bladeParser.parse(codeAr, (arr) => {
-        console.log('codearr', arr)
-
-        // INIT FIRST COMPILATION
-        arr.forEach((comp) => {
-          if(this.directives[comp.name] != undefined) {
-            this.directives[comp.name](comp, bladeParser);
-          }
-          else {
-            bladeParser.handleError();
-          }
-          // else on handle les directives non existantes...
-        })
-
+      bladeParser.precompile(codeAr, (html) => {
+        console.log('html generated', html);
+        // you must to tokenize another to check blade directive
+        // var esprima = require('esprima')
+        var Parser = require('html-dom-parser');
+        var test = Parser(html)
+        console.log('htmlTokens', test)
       })
+
     });
   }
   registerHelper() {

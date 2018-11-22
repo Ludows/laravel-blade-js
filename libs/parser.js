@@ -1,3 +1,4 @@
+const directives = require('./directives');
 
 class parser {
   constructor() {
@@ -57,10 +58,10 @@ class parser {
       the_return[i].params = this.getParams(code.value)
       the_return[i].content = code.value
       the_return[i]._bld = code._bldConfig
-      the_return[i]._bld._execPathParam = code._bldConfig._typeof === "autoclose" && this.getParams(code.value).length > 1  ?  this.getParams(code.value)[1] : null
-      the_return[i]._bld._codeToExec = code._bldConfig._typeof === "asblock" && this.getParams(code.value).length <= 1  ?  code.value.match(/\w+ |<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g) : null
+      the_return[i]._bld._execPathParam = code._bldConfig._typeof === "autoclose" && this.getParams(code.value).length > 1  ?  this.normalizeParams(this.getParams(code.value)[1]) : null
+      the_return[i]._bld._codeToExec = code._bldConfig._typeof === "asblock" && this.getParams(code.value).length <= 1  ?  code.value.match(/\w+\s+|<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g).join(' ') : null
 
-      // console.log('code', code.value.match(/\w+ |<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g))
+      // console.log('code', code.value.match(/\w+\s+|<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g))
     })
 
     if(callback && typeof callback === 'function') {
@@ -73,7 +74,7 @@ class parser {
         this.html += code
         break;
       case 'replace':
-        // txt += code
+        this.html = this.html.replace(code.block, code.to);
         break;
       case 'find':
         var re = new RegExp(code, 'g');
@@ -87,10 +88,28 @@ class parser {
 
         break;
     }
-    // console.log('text code', this.html)
   }
   handleError() {
 
+  }
+  precompile(arr, func) {
+    this.parse(arr, (arrObj) => {
+      // console.log('codearr', arr)
+
+      // INIT FIRST COMPILATION
+      arrObj.forEach((comp) => {
+        if(directives[comp.name] != undefined) {
+          directives[comp.name](comp, this);
+        }
+        else {
+          this.handleError();
+        }
+      })
+
+    })
+    if(func && typeof func === 'function') {
+      func(this.builder('html'));
+    }
   }
   compile(ar, func) {
 

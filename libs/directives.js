@@ -17,11 +17,14 @@ var directives = {
       // Le bloc existe dans la vue parente
       switch (obj._bld._typeof) {
         case 'asblock':
-
+          parser.builder('replace', {block: test_in_parent_view[0], to: obj._bld._codeToExec})
           break;
         default:
-
+          parser.builder('replace', {block: test_in_parent_view[0], to: obj._bld._execPathParam})
+          break;
       }
+      // console.log('the html', parser.builder('html'))
+
     }
     else {
       parser.handleError()
