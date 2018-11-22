@@ -27,11 +27,11 @@ instance.addRegex( /\@\w+\(.*?\)/g , 'directive with no closures', 'g' );
 instance.addRegex( /@\w+\(.*?\)\s+(.*?)\s+\@end\w+/g , 'directive with closures', 'g' );
 
 // instance2.addRegex( /[^\r\n]+/g , 'line', 'g' );
+instance2.addRegex( /(\@\w+\s\(.*?\)\s+|.*|\w+\@end\w+)/g , 'test', 'g' );
 
 // instance2.addRegex( /\@\w+\(.*?\)/g , 'directive with no closures', 'g' );
 // instance2.addRegex( /@\w+\(.*?\)\s+(.*?)\s+\@end\w+/g , 'directive with closures', 'g' );
 // instance2.addRegex( /<(\s*|\/)\w+[^>]*>/g, 'html as inline', 'g' );
-// instance2.addRegex( /<((?=!\-\-)!\-\-[\s\S]*\-\-|((?=\?)\?[\s\S]*\?|((?=\/)\/[^.\-\d][^\/\]'"[!#$%&()*+,;<=>?@^`{|}~ ]*|[^.\-\d][^\/\]'"[!#$%&()*+,;<=>?@^`{|}~ ]*(?:\s[^.\-\d][^\/\]'"[!#$%&()*+,;<=>?@^`{|}~ ]*(?:=(?:"[^"]*"|'[^']*'|[^'"<\s]*))?)*)\s?\/?))>/ig, 'html ', 'g' );
 
 // instance2.addRegex( /\<+[a-zA-Z0-9\=\"\s]+\>/gi, 'html', 'g' );
 

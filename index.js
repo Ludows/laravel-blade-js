@@ -51,11 +51,12 @@ class bladeRender {
       let bladeParser = new parser();
       // return an array of object
       bladeParser.precompile(codeAr, (html) => {
-        console.log('html generated', html);
+        // console.log('html generated', html);
         // you must to tokenize another to check blade directive
-        // var esprima = require('esprima')
-        
-        console.log('htmlTokens', test)
+        // var HTMLParser = require('fast-html-parser');
+
+
+
       })
 
     });

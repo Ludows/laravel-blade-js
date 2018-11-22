@@ -9,7 +9,6 @@
   "author": "Ludovic Cointrel",
   "license": "MIT",
   "dependencies": {
-    "htmlparser2": "^3.10.0",
     "wink-tokenizer": "^5.0.0"
   }
 }

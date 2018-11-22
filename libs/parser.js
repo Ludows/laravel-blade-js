@@ -100,16 +100,24 @@ class parser {
       arrObj.forEach((comp) => {
         if(directives[comp.name] != undefined) {
           directives[comp.name](comp, this);
+
         }
         else {
           this.handleError();
         }
       })
+      this.identify(this.html);
 
     })
     if(func && typeof func === 'function') {
       func(this.builder('html'));
     }
+  }
+  identify(string) {
+    console.log('string called', string)
+    console.log('condition statement', string.match(/@\w+\s+\(.*?\)\s+<\s*\w+[^\0]*?(.*?)<\s*\/\s*\w+>\s+(.*?)\s+\@end\w+/gm))
+    console.log('condition statement length', string.match(/@\w+\s+\(.*?\)\s+<\s*\w+[^\0]*?(.*?)<\s*\/\s*\w+>\s+(.*?)\s+\@end\w+/gm).length)
+    console.log('condition statement search index', string.search(/\@\if/g))
   }
   compile(ar, func) {
 
