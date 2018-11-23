@@ -3,6 +3,13 @@ const directives = require('./directives');
 class parser {
   constructor() {
     this.html = '';
+    this.pattern = {
+      block_with_escaping: new RegExp('({{)(?: |)([^]+?)(?: |)}}', 'g'),
+      block_without_escaping: new RegExp('({!!)(?: |)([^]+?)(?: |)!!}', 'g'),
+      inline_directive: new RegExp('\/?(@\w+)(?:|)\(([^]+?)\)', 'gm'),
+      global_directive: new RegExp('(@\w+)(?: |)([^]+?)(?: |)\@end\w+', 'g'),
+    }
+    this.compilePattern = [this.pattern.inline_directive, this.pattern.global_directive, this.pattern.block_with_escaping, this.pattern.block_without_escaping]
   }
   which_name(entry) {
     var base_name = '';
@@ -18,6 +25,22 @@ class parser {
   }
   what_type(entry) {
     var type = undefined;
+
+    // for me
+    // block escaping regex
+    // ({{)(?: |)([^]+?)(?: |)}}
+
+    // for me
+    // block unescaping regex
+    // ({!!)(?: |)([^]+?)(?: |)!!}
+
+    // for me
+    // match inline directive
+    // \/?(@\w+)(?:|)\(([^]+?)\) /gm
+
+    // for me
+    // match directive like @block @endblock
+    // (@\w+)(?: |)([^]+?)(?: |)\@end\w+/g
 
     var typed_data = ['@', '{{', '{!!', '()', 'No Match']
     var types = ['directive', 'block with escape', 'block without escape', 'function', 'Oooops']
@@ -90,7 +113,7 @@ class parser {
     }
   }
   handleError() {
-
+   console.log('has error to compile');
   }
   precompile(arr, func) {
     this.parse(arr, (arrObj) => {
@@ -114,13 +137,46 @@ class parser {
     }
   }
   identify(string) {
-    console.log('string called', string)
-    console.log('condition statement', string.match(/@\w+\s+\(.*?\)\s+<\s*\w+[^\0]*?(.*?)<\s*\/\s*\w+>\s+(.*?)\s+\@end\w+/gm))
-    console.log('condition statement length', string.match(/@\w+\s+\(.*?\)\s+<\s*\w+[^\0]*?(.*?)<\s*\/\s*\w+>\s+(.*?)\s+\@end\w+/gm).length)
-    console.log('condition statement search index', string.search(/\@\if/g))
-  }
-  compile(ar, func) {
+    // console.log('string called', string)
 
+    // FIRST MATCH INLINE DIRECTIVE (LE plus chiant d'abord)
+    // SECOND MATCH global DIRECTIVE
+    // THREE MATCH BLOCK
+
+    // console.log('condition statement', string.match(/(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g))
+    // console.log('condition statement length', string.match(/(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g).length)
+    // console.log('condition statement search index', string.search(/\@\if/g))
+  }
+  compile(string, func) {
+    console.log('string called', string)
+
+    // FIRST MATCH INLINE DIRECTIVE (LE plus chiant d'abord)
+    // SECOND MATCH global DIRECTIVE
+    // THREE MATCH BLOCK
+    this.compilePattern.forEach((pattern) => {
+      var arrMatches = string.match(pattern)
+      if(arrMatches && arrMatches.length > 0) {
+        arrMatches.forEach((matche) => {
+
+        })
+      }
+    })
+
+    // this.parse(ar, (arrObj) => {
+    //   console.log('arrObj', arrObj)
+    //
+    //   // INIT FIRST COMPILATION
+    //   arrObj.forEach((comp) => {
+    //     if(directives[comp.name] != undefined) {
+    //       directives[comp.name](comp, this);
+    //     }
+    //     else {
+    //       this.handleError();
+    //     }
+    //   })
+    //   this.identify(this.html);
+    //
+    // })
     if(func && typeof func === 'function') {
       func();
     }

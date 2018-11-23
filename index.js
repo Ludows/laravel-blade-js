@@ -54,6 +54,9 @@ class bladeRender {
         // console.log('html generated', html);
         // you must to tokenize another to check blade directive
         // var HTMLParser = require('fast-html-parser');
+        bladeParser.compile(html, (renderer) => {
+          console.log('renderer', renderer)
+        })
 
 
 
