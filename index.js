@@ -12,6 +12,7 @@ class bladeRender {
     var defaults = {
       cache : true,
       cacheDir: '',
+      componentsDir: '',
       views: '',
       extension: '.bjs'
     }
@@ -37,29 +38,13 @@ class bladeRender {
       if (err) {
           throw err;
       }
-      // we tokenize code with our config
-      let tokens = myTokenizer.tokenize( code.toString() );
-      let codeAr = tokens.filter((token) => {
-        if(token.tag === "directive with no closures" || token.tag === "directive with closures") {
-          token._bldConfig = { views: this.options.views, extension : this.options.extension, name: name }
-          token._bldConfig._typeof = token.tag === "directive with no closures" ? 'autoclose' : 'asblock'
-
-          return token
-        }
-      })
       // blade parser start here
-      let bladeParser = new parser();
+      // we synchronise the bladeRenderer to parser
+      let bladeParser = new parser(this);
+      // console.log('bladeParser', bladeParser)
       // return an array of object
-      bladeParser.precompile(codeAr, (html) => {
-        // console.log('html generated', html);
-        // you must to tokenize another to check blade directive
-        // var HTMLParser = require('fast-html-parser');
-        bladeParser.compile(html, (renderer) => {
-          console.log('renderer', renderer)
-        })
-
-
-
+      bladeParser.precompile(code.toString(), (html) => {
+        console.log('html', html)
       })
 
     });

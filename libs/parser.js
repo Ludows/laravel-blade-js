@@ -1,15 +1,16 @@
 const directives = require('./directives');
 
 class parser {
-  constructor() {
+  constructor(bladeRender) {
     this.html = '';
-    this.pattern = {
-      block_with_escaping: new RegExp('({{)(?: |)([^]+?)(?: |)}}', 'g'),
-      block_without_escaping: new RegExp('({!!)(?: |)([^]+?)(?: |)!!}', 'g'),
-      inline_directive: new RegExp('\/?(@\w+)(?:|)\(([^]+?)\)', 'gm'),
-      global_directive: new RegExp('(@\w+)(?: |)([^]+?)(?: |)\@end\w+', 'g'),
-    }
-    this.compilePattern = [this.pattern.inline_directive, this.pattern.global_directive, this.pattern.block_with_escaping, this.pattern.block_without_escaping]
+    this._bld = bladeRender;
+    this.patterns = this.paternify_directives(directives);
+    // this.pattern = {
+    //   block_with_escaping: new RegExp(/({{)(?: |)([^]+?)(?: |)}}/, 'gi'),
+    //   block_without_escaping: new RegExp(/({!!)(?: |)([^]+?)(?: |)!!}/, 'gi'),
+    //   inline_directive: new RegExp(/\@\w+\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\)|\@\w+\([\'\"](.*)[\'\"]\s*\)/, 'gi'),
+    //   global_directive: new RegExp(/\@\w+\(\s*[\'\"](.*)[\'\"]\s*\)((?:(?!\@show|\@stop|\@end\w+).*\s*)*)(\@show|\@stop|\@end\w+)/, 'gi'),
+    // }
   }
   which_name(entry) {
     var base_name = '';
@@ -22,6 +23,44 @@ class parser {
       }
     }
     return base_name;
+  }
+  paternify_directives(object) {
+    // new RegExp(/\@\w+\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\)|\@\w+\([\'\"](.*)[\'\"]\s*\)/, 'gi'),
+    // new RegExp(/\@\w+\(\s*[\'\"](.*)[\'\"]\s*\)((?:(?!\@show|\@stop|\@end\w+).*\s*)*)(\@show|\@stop|\@end\w+)/, 'gi'),
+    let resultArr = new Array();
+    for (var directive in object) {
+      // console.log('directive', object[directive])
+
+      var objGenerated = {
+        name: directive,
+        type: object[directive].type
+        // regexp:
+      }
+      switch (object[directive].type) {
+        case 'inline':
+          objGenerated.Regex =  new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
+          break;
+        case 'block':
+          objGenerated.Regex = new RegExp("\@"+directive+"\\(\\s*[\'\"](.*)[\'\"]\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
+          break;
+       case 'both':
+         objGenerated.Regex = new Object();
+         objGenerated.Regex.inline = new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
+         objGenerated.Regex.block = new RegExp("\@"+directive+"\\(\\s*[\'\"](.*)[\'\"]\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
+
+
+         break;
+        default:
+
+      }
+      resultArr.push(objGenerated);
+    }
+    return resultArr;
+  }
+  normalizerBothDirective(str1, str2) {
+    var value_to_return;
+    //tester le nombre de paramètres
+    // si 2 parametre , str1 est retourné sinon c'est la str2
   }
   what_type(entry) {
     var type = undefined;
@@ -42,6 +81,11 @@ class parser {
     // match directive like @block @endblock
     // (@\w+)(?: |)([^]+?)(?: |)\@end\w+/g
 
+
+    // for me
+    // operateur ternaire match
+    // .+\?.+\:.+
+
     var typed_data = ['@', '{{', '{!!', '()', 'No Match']
     var types = ['directive', 'block with escape', 'block without escape', 'function', 'Oooops']
 
@@ -56,6 +100,7 @@ class parser {
     return type;
   }
   getParams(entry) {
+    console.log('debug', entry)
     var par_regex = /\'.*?\'/g;
     var params = entry.match(par_regex);
 
@@ -69,26 +114,6 @@ class parser {
     }
     else {
       return entry.replace('.', '/').replace("'", '').replace("'", '')
-    }
-  }
-  parse(array, callback) {
-    var the_return = new Array();
-
-    array.forEach((code, i) => {
-      the_return[i] = new Object();
-      the_return[i].name = this.which_name(code.value)
-      the_return[i].type = this.what_type(code.value)
-      the_return[i].params = this.getParams(code.value)
-      the_return[i].content = code.value
-      the_return[i]._bld = code._bldConfig
-      the_return[i]._bld._execPathParam = code._bldConfig._typeof === "autoclose" && this.getParams(code.value).length > 1  ?  this.normalizeParams(this.getParams(code.value)[1]) : null
-      the_return[i]._bld._codeToExec = code._bldConfig._typeof === "asblock" && this.getParams(code.value).length <= 1  ?  code.value.match(/\w+\s+|<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g).join(' ') : null
-
-      // console.log('code', code.value.match(/\w+\s+|<\s*\w+[^>]*>(.*?)<\s*\/\s*\w+>/g))
-    })
-
-    if(callback && typeof callback === 'function') {
-      callback(the_return);
     }
   }
   builder(cmd, code) {
@@ -115,68 +140,42 @@ class parser {
   handleError() {
    console.log('has error to compile');
   }
-  precompile(arr, func) {
-    this.parse(arr, (arrObj) => {
-      // console.log('codearr', arr)
+  precompile(str, func) {
 
-      // INIT FIRST COMPILATION
-      arrObj.forEach((comp) => {
-        if(directives[comp.name] != undefined) {
-          directives[comp.name](comp, this);
+    // console.log('str html', str)
 
-        }
-        else {
-          this.handleError();
-        }
-      })
-      this.identify(this.html);
+    this.patterns.forEach((pattern) => {
+
+      // console.log('typeof pattern.Regex', typeof pattern.Regex)
+
+      if(pattern.Regex.inline && pattern.Regex.block) {
+        console.log('you must compare between two matches')
+        var test1 = str.match(pattern.Regex.inline)
+        var test2 = pattern.Regex.block.exec(str)
+        console.log('test1', test1)
+        console.log('test2', test2)
+        this.normalizerBothDirective(test1[0], test2[0])
+      }
+      else {
+        var test = str.match(pattern.Regex)
+        console.log('test', test)
+        directives[pattern.name].render(test[0], this)
+      }
+
+
 
     })
+
+
     if(func && typeof func === 'function') {
       func(this.builder('html'));
     }
   }
-  identify(string) {
-    // console.log('string called', string)
-
-    // FIRST MATCH INLINE DIRECTIVE (LE plus chiant d'abord)
-    // SECOND MATCH global DIRECTIVE
-    // THREE MATCH BLOCK
-
-    // console.log('condition statement', string.match(/(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g))
-    // console.log('condition statement length', string.match(/(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g).length)
-    // console.log('condition statement search index', string.search(/\@\if/g))
-  }
   compile(string, func) {
-    console.log('string called', string)
 
-    // FIRST MATCH INLINE DIRECTIVE (LE plus chiant d'abord)
-    // SECOND MATCH global DIRECTIVE
-    // THREE MATCH BLOCK
-    this.compilePattern.forEach((pattern) => {
-      var arrMatches = string.match(pattern)
-      if(arrMatches && arrMatches.length > 0) {
-        arrMatches.forEach((matche) => {
 
-        })
-      }
-    })
 
-    // this.parse(ar, (arrObj) => {
-    //   console.log('arrObj', arrObj)
-    //
-    //   // INIT FIRST COMPILATION
-    //   arrObj.forEach((comp) => {
-    //     if(directives[comp.name] != undefined) {
-    //       directives[comp.name](comp, this);
-    //     }
-    //     else {
-    //       this.handleError();
-    //     }
-    //   })
-    //   this.identify(this.html);
-    //
-    // })
+
     if(func && typeof func === 'function') {
       func();
     }
