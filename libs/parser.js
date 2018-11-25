@@ -1,16 +1,39 @@
 const directives = require('./directives');
 
+// for me
+// block escaping regex
+// ({{)(?: |)([^]+?)(?: |)}}
+
+// for me
+// block unescaping regex
+// ({!!)(?: |)([^]+?)(?: |)!!}
+
+// for me
+// match inline directive
+// \/?(@\w+)(?:|)\(([^]+?)\) /gm
+
+// for me
+// match directive like @block @endblock
+// (@\w+)(?: |)([^]+?)(?: |)\@end\w+/g
+
+
+// for me
+// operateur ternaire match
+// .+\?.+\:.+
+
+// for me
+// match all operators
+// [\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+ / g
+
+// for me
+// match all variables
+// [a-zA-Z_]+([a-zA-Z0-9_]*)
+
 class parser {
   constructor(bladeRender) {
     this.html = '';
     this._bld = bladeRender;
     this.patterns = this.paternify_directives(directives);
-    // this.pattern = {
-    //   block_with_escaping: new RegExp(/({{)(?: |)([^]+?)(?: |)}}/, 'gi'),
-    //   block_without_escaping: new RegExp(/({!!)(?: |)([^]+?)(?: |)!!}/, 'gi'),
-    //   inline_directive: new RegExp(/\@\w+\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\)|\@\w+\([\'\"](.*)[\'\"]\s*\)/, 'gi'),
-    //   global_directive: new RegExp(/\@\w+\(\s*[\'\"](.*)[\'\"]\s*\)((?:(?!\@show|\@stop|\@end\w+).*\s*)*)(\@show|\@stop|\@end\w+)/, 'gi'),
-    // }
   }
   which_name(entry) {
     var base_name = '';
@@ -25,8 +48,6 @@ class parser {
     return base_name;
   }
   paternify_directives(object) {
-    // new RegExp(/\@\w+\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\)|\@\w+\([\'\"](.*)[\'\"]\s*\)/, 'gi'),
-    // new RegExp(/\@\w+\(\s*[\'\"](.*)[\'\"]\s*\)((?:(?!\@show|\@stop|\@end\w+).*\s*)*)(\@show|\@stop|\@end\w+)/, 'gi'),
     let resultArr = new Array();
     for (var directive in object) {
       // console.log('directive', object[directive])
@@ -41,7 +62,7 @@ class parser {
           objGenerated.Regex =  new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
           break;
         case 'block':
-          objGenerated.Regex = new RegExp("\@"+directive+"\\(\\s*[\'\"](.*)[\'\"]\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
+          objGenerated.Regex = new RegExp("\@"+directive+"\\s*\\(\\s*(.*)\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
           break;
        case 'both':
          objGenerated.Regex = new Object();
@@ -57,54 +78,63 @@ class parser {
     }
     return resultArr;
   }
-  normalizerBothDirective(str1, str2) {
-    var value_to_return;
-    //tester le nombre de paramètres
-    // si 2 parametre , str1 est retourné sinon c'est la str2
-  }
-  what_type(entry) {
-    var type = undefined;
+  normalizerBothDirective(str, directive_name) {
 
-    // for me
-    // block escaping regex
-    // ({{)(?: |)([^]+?)(?: |)}}
+    var value_to_return = new Array();
 
-    // for me
-    // block unescaping regex
-    // ({!!)(?: |)([^]+?)(?: |)!!}
+    var re = new RegExp("(@"+directive_name+")(?: |)([^]+?)(?: |)\@end"+directive_name+"", 'g')
+    var re2 = new RegExp("\@"+directive_name+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive_name+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
 
-    // for me
-    // match inline directive
-    // \/?(@\w+)(?:|)\(([^]+?)\) /gm
+    var blockDir_test = str.match(re)
+    var inlineDir_test = str.match(re2)
+    var excludes_blocks = new Array();
 
-    // for me
-    // match directive like @block @endblock
-    // (@\w+)(?: |)([^]+?)(?: |)\@end\w+/g
-
-
-    // for me
-    // operateur ternaire match
-    // .+\?.+\:.+
-
-    var typed_data = ['@', '{{', '{!!', '()', 'No Match']
-    var types = ['directive', 'block with escape', 'block without escape', 'function', 'Oooops']
-
-    for (var i = 0; i < types.length; i++) {
-      if(entry.includes(typed_data[i])) {
-        type = types[i];
-        break;
+    inlineDir_test.forEach((inline) => {
+      var pars = this.getParams(inline)
+      if(pars.length < 2) {
+        excludes_blocks.push(inline)
+        let idx = inlineDir_test.indexOf(inline);
+        inlineDir_test.splice(idx, 1)
       }
-    }
+    })
 
-    // Prévoir pour le typage de variable
-    return type;
+    blockDir_test.forEach( (block, i) => {
+      value_to_return.push(block.replace(inlineDir_test[i], '').trim())
+    })
+
+    value_to_return = value_to_return.concat(inlineDir_test);
+
+    // console.log('after treatment value_to_return', value_to_return)
+    // console.log('after treatment exclude', excludes_blocks)
+
+    return value_to_return;
+  }
+  getContents(entry, pattern) {
+    let rtn = '';
+    var params = this.getParams(entry);
+    if(params.length === 2) {
+      rtn = params[1]
+    }
+    else {
+      let re = new RegExp(/(.*)/, 'g');
+      var contents = entry.match(re);
+      contents.forEach((content) => {
+        if(content.includes("@"+pattern) == false && content.includes("@end"+pattern) == false) {
+          rtn += content;
+        }
+      })
+    }
+    return rtn
   }
   getParams(entry) {
-    console.log('debug', entry)
+    // console.log('debug', entry)
     var par_regex = /\'.*?\'/g;
     var params = entry.match(par_regex);
 
     return params;
+  }
+  testParams(entry) {
+
   }
   normalizeParams(entry) {
     if(typeof entry === 'array') {
@@ -140,42 +170,43 @@ class parser {
   handleError() {
    console.log('has error to compile');
   }
-  precompile(str, func) {
-
-    // console.log('str html', str)
-
+  _initCompilationProcess(str) {
     this.patterns.forEach((pattern) => {
 
+      var val;
       // console.log('typeof pattern.Regex', typeof pattern.Regex)
 
       if(pattern.Regex.inline && pattern.Regex.block) {
-        console.log('you must compare between two matches')
-        var test1 = str.match(pattern.Regex.inline)
-        var test2 = pattern.Regex.block.exec(str)
-        console.log('test1', test1)
-        console.log('test2', test2)
-        this.normalizerBothDirective(test1[0], test2[0])
+        console.log('you must compare')
+        // console.log('pattern.name', pattern.name)
+        var str2 = pattern.Regex.block.exec(str)
+        if(str2 != null) {
+          val = this.normalizerBothDirective(str2.input, pattern.name)
+        }
       }
       else {
-        var test = str.match(pattern.Regex)
-        console.log('test', test)
-        directives[pattern.name].render(test[0], this)
+        if(str.match(pattern.Regex) != null) {
+          console.log('pattern.name '+pattern.name, pattern.name)
+          val = str.match(pattern.Regex)
+        }
       }
-
-
-
+      if(val != null) {
+        directives[pattern.name].render(val, this)
+      }
     })
+  }
+  precompile(str, func) {
 
+    // console.log('str html', str)
+    this._initCompilationProcess(str)
 
     if(func && typeof func === 'function') {
       func(this.builder('html'));
     }
   }
-  compile(string, func) {
+  compile(str, func) {
 
-
-
-
+    this._initCompilationProcess(str)
     if(func && typeof func === 'function') {
       func();
     }

@@ -20,6 +20,15 @@ class bladeRender {
     this.directives = directiveManager;
     this.helpers = helpersManager;
     this.variables = {}
+    this.events = {
+      before_precompile: (parser) => {},
+      after_precompile: (parser) => {},
+      before_compile: (parser) => {},
+      after_compile: (parser) => {},
+      before_render: (parser) => {},
+      completed_parsing: (parser) => {},
+      error_parsing: (parser) => {}
+    }
   }
   render(name, properties, callback) {
     // console.log('options', this.options)
@@ -43,8 +52,11 @@ class bladeRender {
       let bladeParser = new parser(this);
       // console.log('bladeParser', bladeParser)
       // return an array of object
-      bladeParser.precompile(code.toString(), (html) => {
-        console.log('html', html)
+      bladeParser.precompile(code.toString(), (precompiled) => {
+        console.log('precompiled', precompiled)
+        bladeParser.compile(precompiled, (html) => {
+          // console.log('html', html)
+        })
       })
 
     });
