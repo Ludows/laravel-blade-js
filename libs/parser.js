@@ -33,35 +33,8 @@ class parser {
     this.utils = {
       variables : /\$[a-zA-Z_]+([a-zA-Z0-9_]*)/g,
       operators: /[\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+/g,
-      helpers: /(?!\@)[a-zA-Z_]+([a-zA-Z0-9_]*)\((.*?)\)/g
-    }
-    this.operators = {
-      assignement: {
-        '=' : '',
-        '+=': '',
-        '-=': '',
-        '*=': '',
-        '/=': '',
-        '%=': ''
-      },
-      //todo
-      bitwise: { },
-      comparison: {
-        '==' : '',
-        '===': '',
-        '!=': '',
-        '!==': '',
-        '>': '',
-        '<': '',
-        '>=': '',
-        '<=': ''
-      },
-      logical: {
-        '&&': '',
-        '||': '',
-        '!': ''
-      },
-      conditional: '= ? :'
+      helpers: /([a-z0-9]+)\((.*)\)(\t|\r|\s)*\W|\s([a-z0-9]+)\((.*)\)(\t|\r|\s)*\W/gi,
+      defaultParams: /\'(.*?)\'|\"(.*?)\"/g
     }
   }
   which_name(entry) {
@@ -158,17 +131,24 @@ class parser {
   getParams(entry) {
     // console.log('debug', entry)
     // var par_regex = /\'.*?\'/g;
-    this._parseParams(entry);
+    return this._parseParams(entry);
     // var params = entry.match(par_regex);
     // return params;
   }
   _parseParams(entry) {
+    let rtn;
     var variables = this._hasVariables(entry)
     var helpers = this._hasHelperCall(entry)
     var operators = this._hasOperators(entry)
-    console.log('variables', variables)
+    var defaultParams = this._getBasicParameters(entry)
+    // console.log('variables', variables)
     console.log('helpers', helpers)
     console.log('operators', operators)
+    console.log('defaultParams', defaultParams)
+    if(defaultParams.response) {
+      rtn = defaultParams.params
+    }
+    return rtn;
   }
   _hasVariables(entry) {
     let bool = false;
@@ -176,17 +156,23 @@ class parser {
     if(arr != null) {
       bool = true;
     }
-    return {response : bool, vars : arr}
-
+    return {response : bool, vars : arr , currentStr : entry}
   }
   _hasHelperCall(entry) {
     let bool = false;
-    console.log('helper regex', this.utils.helpers)
     let arr = entry.match(this.utils.helpers)
     if(arr != null) {
       bool = true;
     }
-    return {response : bool, helpers : arr}
+    return {response : bool, helpers : arr, currentStr : entry}
+  }
+  _getBasicParameters(entry) {
+    let bool = false;
+    let arr = entry.match(this.utils.defaultParams)
+    if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, params : arr, currentStr : entry}
   }
   _hasOperators(entry) {
     let bool = false;
@@ -246,12 +232,12 @@ class parser {
       }
       else {
         if(str.match(pattern.Regex) != null) {
-          console.log('pattern.name '+pattern.name, pattern.name)
+          // console.log('pattern.name '+pattern.name, pattern.name)
           val = str.match(pattern.Regex)
         }
       }
       if(val != null) {
-        // directives[pattern.name].render(val, this)
+        directives[pattern.name].render(val, this)
       }
     })
   }
