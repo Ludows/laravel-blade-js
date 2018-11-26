@@ -18,10 +18,6 @@ const directives = require('./directives');
 
 
 // for me
-// operateur ternaire match
-// .+\?.+\:.+
-
-// for me
 // match all operators
 // [\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+ / g
 
@@ -34,6 +30,39 @@ class parser {
     this.html = '';
     this._bld = bladeRender;
     this.patterns = this.paternify_directives(directives);
+    this.utils = {
+      variables : /\$[a-zA-Z_]+([a-zA-Z0-9_]*)/g,
+      operators: /[\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+/g,
+      helpers: /(?!\@)[a-zA-Z_]+([a-zA-Z0-9_]*)\((.*?)\)/g
+    }
+    this.operators = {
+      assignement: {
+        '=' : '',
+        '+=': '',
+        '-=': '',
+        '*=': '',
+        '/=': '',
+        '%=': ''
+      },
+      //todo
+      bitwise: { },
+      comparison: {
+        '==' : '',
+        '===': '',
+        '!=': '',
+        '!==': '',
+        '>': '',
+        '<': '',
+        '>=': '',
+        '<=': ''
+      },
+      logical: {
+        '&&': '',
+        '||': '',
+        '!': ''
+      },
+      conditional: '= ? :'
+    }
   }
   which_name(entry) {
     var base_name = '';
@@ -128,13 +157,44 @@ class parser {
   }
   getParams(entry) {
     // console.log('debug', entry)
-    var par_regex = /\'.*?\'/g;
-    var params = entry.match(par_regex);
-
-    return params;
+    // var par_regex = /\'.*?\'/g;
+    this._parseParams(entry);
+    // var params = entry.match(par_regex);
+    // return params;
   }
-  testParams(entry) {
+  _parseParams(entry) {
+    var variables = this._hasVariables(entry)
+    var helpers = this._hasHelperCall(entry)
+    var operators = this._hasOperators(entry)
+    console.log('variables', variables)
+    console.log('helpers', helpers)
+    console.log('operators', operators)
+  }
+  _hasVariables(entry) {
+    let bool = false;
+    let arr = entry.match(this.utils.variables)
+    if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, vars : arr}
 
+  }
+  _hasHelperCall(entry) {
+    let bool = false;
+    console.log('helper regex', this.utils.helpers)
+    let arr = entry.match(this.utils.helpers)
+    if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, helpers : arr}
+  }
+  _hasOperators(entry) {
+    let bool = false;
+    let arr = entry.match(this.utils.operators)
+    if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, operators : arr}
   }
   normalizeParams(entry) {
     if(typeof entry === 'array') {
@@ -191,7 +251,7 @@ class parser {
         }
       }
       if(val != null) {
-        directives[pattern.name].render(val, this)
+        // directives[pattern.name].render(val, this)
       }
     })
   }

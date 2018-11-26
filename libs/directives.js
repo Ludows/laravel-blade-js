@@ -17,6 +17,7 @@ var directives = {
         let extend_rt;
         // console.log('extends start', obj)
         let params = parser.getParams(extend)
+        console.log('parser.normalizeParams(params[0])', parser.normalizeParams(params[0]))
         let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params[0])+parser._bld.options.extension);
         extend_rt = fs.readFileSync(fullPath)
         parser.builder('append', extend_rt);
@@ -55,6 +56,7 @@ var directives = {
     type: 'block',
     render: (arr, parser) => {
       console.log('string if called', arr)
+      console.log('string if called', arr.length)
       arr.forEach((blk) => {
         console.log('if params', parser.getParams(blk))
       })
