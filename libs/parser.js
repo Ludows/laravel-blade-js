@@ -37,18 +37,6 @@ class parser {
       defaultParams: /\'(.*?)\'|\"(.*?)\"/g
     }
   }
-  which_name(entry) {
-    var base_name = '';
-    for (var i = 0; i < entry.length; i++) {
-      if(entry[i] != "@" && entry[i] != "(") {
-        base_name += entry[i]
-      }
-      if(entry[i] === "(") {
-        break;
-      }
-    }
-    return base_name;
-  }
   paternify_directives(object) {
     let resultArr = new Array();
     for (var directive in object) {
@@ -129,26 +117,42 @@ class parser {
     return rtn
   }
   getParams(entry) {
-    // console.log('debug', entry)
-    // var par_regex = /\'.*?\'/g;
     return this._parseParams(entry);
-    // var params = entry.match(par_regex);
-    // return params;
   }
   _parseParams(entry) {
     let rtn;
-    var variables = this._hasVariables(entry)
-    var helpers = this._hasHelperCall(entry)
-    var operators = this._hasOperators(entry)
-    var defaultParams = this._getBasicParameters(entry)
-    // console.log('variables', variables)
-    console.log('helpers', helpers)
-    console.log('operators', operators)
-    console.log('defaultParams', defaultParams)
-    if(defaultParams.response) {
-      rtn = defaultParams.params
+    var re = /(\(([^()]*)\))/g
+    var string_to_test = entry.match(re)[0]
+    rtn = {
+      vars : this._hasVariables(string_to_test).vars,
+      helpers: this._hasHelperCall(string_to_test).helpers,
+      operators: this._hasOperators(string_to_test).operators,
+      defaultParams: this._getBasicParameters(string_to_test).params,
+      currentStr: string_to_test
     }
+
     return rtn;
+  }
+  _renderVars(vars) {
+    let tst = vars;
+    let rtn;
+    if(vars && vars instanceof Array) {
+      rtn = new Array();
+      vars.forEach((variable) => {
+        rtn.push(this._bld.variables[variable.substr(1)])
+      })
+    }
+    else {
+      rtn = this._bld.variables[vars.substr(1)]
+    }
+
+    return rtn;
+
+  }
+  _Interpolate(entry) {
+    // for rendering block contents
+    // {{}}
+    // {!!!!}
   }
   _hasVariables(entry) {
     let bool = false;

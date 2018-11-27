@@ -31,7 +31,6 @@ class bladeRender {
     }
   }
   render(name, properties, callback) {
-    // console.log('options', this.options)
     console.log('name', name)
     console.log('properties', properties)
     // console.log('callback', callback);
