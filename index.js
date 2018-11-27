@@ -52,7 +52,7 @@ class bladeRender {
       // console.log('bladeParser', bladeParser)
       // return an array of object
       bladeParser.precompile(code.toString(), (precompiled) => {
-        console.log('precompiled', precompiled)
+        // console.log('precompiled', precompiled)
         bladeParser.compile(precompiled, (html) => {
           // console.log('html', html)
         })

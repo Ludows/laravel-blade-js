@@ -37,6 +37,9 @@ class parser {
       defaultParams: /\'(.*?)\'|\"(.*?)\"/g
     }
   }
+  getVars() {
+    return this._bld.variables;
+  }
   paternify_directives(object) {
     let resultArr = new Array();
     for (var directive in object) {
@@ -81,7 +84,7 @@ class parser {
 
     inlineDir_test.forEach((inline) => {
       var pars = this.getParams(inline)
-      if(pars.length < 2) {
+      if(pars.defaultParams.length < 2) {
         excludes_blocks.push(inline)
         let idx = inlineDir_test.indexOf(inline);
         inlineDir_test.splice(idx, 1)
@@ -93,6 +96,7 @@ class parser {
     })
 
     value_to_return = value_to_return.concat(inlineDir_test);
+
 
     // console.log('after treatment value_to_return', value_to_return)
     // console.log('after treatment exclude', excludes_blocks)
@@ -120,6 +124,7 @@ class parser {
     return this._parseParams(entry);
   }
   _parseParams(entry) {
+    // console.log('entry point parse params', entry)
     let rtn;
     var re = /(\(([^()]*)\))/g
     var string_to_test = entry.match(re)[0]

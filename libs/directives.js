@@ -28,9 +28,11 @@ var directives = {
   section: {
     type: 'both',
     render : (arr, parser) => {
+      console.log('arr of sections', arr)
         arr.forEach((section) => {
+          // console.log('section ?', section);
           let params = parser.getParams(section);
-          console.log('params section', params)
+          // console.log('params section', params)
           // console.log('params length', params.length)
           var test_in_parent_view = parser.builder('find', '@yield\\(\''+ parser.normalizeParams(params.defaultParams[0]) +'\'\\)' )
           // console.log('test', test_in_parent_view)
@@ -56,19 +58,22 @@ var directives = {
   if : {
     type: 'block',
     render: (arr, parser) => {
-      console.log('string if called', arr)
-      console.log('string if called', arr.length)
+      // console.log('string if called', arr)
+      // console.log('string if called', arr.length)
       arr.forEach((blk) => {
         let params = parser.getParams(blk);
-        console.log("parser.getContents(blk, 'if')", parser.getContents(blk, 'if'))
+        // console.log("parser.getContents(blk, 'if')", parser.getContents(blk, 'if'))
+
+        // console.log("params if", params)
 
         // A Modifier dans le futur
+        let bld = parser.getVars();
         let renderedVars = parser._renderVars(params.vars)[0]
         let ops = parser.normalizeParams(params.operators[0])
         let content = parser.getContents(blk, 'if')
         let defaultParam = parser.normalizeParams(params.defaultParams[0])
-        if(renderedVars+${ops}+defaultParam) {
-          console.log(renderedVars+ops+defaultParam)
+        if(renderedVars+ops+defaultParam) {
+          console.log(eval(bld[params.vars[0].substr(1)]+ops+defaultParam))
           console.log(renderedVars==defaultParam)
         }
       })
