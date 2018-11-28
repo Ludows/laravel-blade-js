@@ -144,7 +144,6 @@ class parser {
     return rtn;
   }
   _renderVars(vars) {
-    let tst = vars;
     let rtn;
     if(vars && vars instanceof Array) {
       rtn = new Array();
