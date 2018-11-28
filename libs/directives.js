@@ -3,13 +3,6 @@ let path = require('path');
 
 var directives = {
 
-  // {
-  //  type: 'inline' // 'block' // 'both'
-  // }
-
-  // test: {
-  //   type
-  // }
   extends: {
     type: 'inline',
     render: (arr, parser) => {
@@ -55,6 +48,10 @@ var directives = {
 
     }
   },
+  hasSection: {
+    type: 'block',
+    render : (arr, parser) => {}
+  },
   if : {
     type: 'block',
     render: (arr, parser) => {
@@ -67,16 +64,133 @@ var directives = {
         // console.log("params if", params)
 
         // A Modifier dans le futur
+
+        // pour l'instant pas de gestions en profondeur des operateurs ..
+        // pour l'instant pas de gestion du @elseif and @else ..
+
         let bld = parser.getVars();
         let renderedVars = parser._renderVars(params.vars)[0]
         let ops = parser.normalizeParams(params.operators[0])
         let content = parser.getContents(blk, 'if')
         let defaultParam = parser.normalizeParams(params.defaultParams[0])
-        if(renderedVars+ops+defaultParam) {
-          console.log(eval(bld[params.vars[0].substr(1)]+ops+defaultParam))
-          console.log(renderedVars==defaultParam)
+
+        let result = parser.evaluate(params.operators[0], renderedVars, defaultParam)
+
+        if(result === true) {
+          parser.builder('replace', {block: blk, to: content})
+        }
+        else {
+          parser.builder('replace', {block: blk, to: ''})
         }
       })
+
+    }
+  },
+  prepend : {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  push : {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  stack : {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  each : {
+    type: 'inline',
+    render: (arr, parser) => {
+
+    }
+  },
+  include: {
+    type: 'inline',
+    render: (arr, parser) => {
+
+    }
+  },
+  includeIf: {
+    type: 'inline',
+    render: (arr, parser) => {
+
+    }
+  },
+  includeWhen: {
+    type: 'inline',
+    render: (arr, parser) => {
+
+    }
+  },
+  includeFirst: {
+    type: 'inline',
+    render: (arr, parser) => {
+
+    }
+  },
+  component: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  verbatim: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  isset: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  empty: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  switch: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  for: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  foreach: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  forelse: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  while: {
+    type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  inject: {
+    type: 'inline',
+    render: (arr, parser) => {
 
     }
   }

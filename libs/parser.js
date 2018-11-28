@@ -1,4 +1,5 @@
 const directives = require('./directives');
+const operatorsManager = require('./operators');
 
 // for me
 // block escaping regex
@@ -30,6 +31,7 @@ class parser {
     this.html = '';
     this._bld = bladeRender;
     this.patterns = this.paternify_directives(directives);
+    this.operators = operatorsManager;
     this.utils = {
       variables : /\$[a-zA-Z_]+([a-zA-Z0-9_]*)/g,
       operators: /[\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+/g,
@@ -39,6 +41,9 @@ class parser {
   }
   getVars() {
     return this._bld.variables;
+  }
+  evaluate(operator, val1, val2) {
+    return this.operators[operator](val1, val2);
   }
   paternify_directives(object) {
     let resultArr = new Array();
@@ -263,7 +268,7 @@ class parser {
 
     this._initCompilationProcess(str)
     if(func && typeof func === 'function') {
-      func();
+      func(this.builder('html'));
     }
   }
 }
