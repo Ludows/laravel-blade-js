@@ -99,7 +99,7 @@ var directives = {
     }
   },
   stack : {
-    type: 'block',
+    type: 'inline',
     render: (arr, parser) => {
 
     }

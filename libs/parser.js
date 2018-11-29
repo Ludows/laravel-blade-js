@@ -36,7 +36,10 @@ class parser {
       variables : /\$[a-zA-Z_]+([a-zA-Z0-9_]*)/g,
       operators: /[\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+/g,
       helpers: /([a-z0-9]+)\((.*)\)(\t|\r|\s)*\W|\s([a-z0-9]+)\((.*)\)(\t|\r|\s)*\W/gi,
-      defaultParams: /\'(.*?)\'|\"(.*?)\"/g
+      defaultParams: /\'(.*?)\'|\"(.*?)\"/g,
+      escapedBlocks : /({{)(?: |)([^]+?)(?: |)}}/g,
+      unescapedBlocks : /({!!)(?: |)([^]+?)(?: |)!!}/g,
+
     }
   }
   getVars() {
@@ -131,11 +134,12 @@ class parser {
   _parseParams(entry) {
     // console.log('entry point parse params', entry)
     let rtn;
-    var re = /(\(([^()]*)\))/g
+    var re = /(\(([^()]*)\))|(\{\{([^]*)\}\})|(\{\!\!([^]*)\!\!\})/g
     var string_to_test = entry.match(re)[0]
     rtn = {
       vars : this._hasVariables(string_to_test).vars,
       helpers: this._hasHelperCall(string_to_test).helpers,
+      blocks: string_to_test.includes('{') ? "escaped" : "unescaped",
       operators: this._hasOperators(string_to_test).operators,
       defaultParams: this._getBasicParameters(string_to_test).params,
       currentStr: string_to_test
@@ -143,16 +147,54 @@ class parser {
 
     return rtn;
   }
+  renderBlocks() {
+    var html = this.builder('html');
+    let escapedBlocksList = html.match(this.utils.escapedBlocks)
+    let unescapedBlocksList = html.match(this.utils.unescapedBlocks)
+    if(escapedBlocksList != null) {
+      escapedBlocksList.forEach((escaped) => {
+        let params = this.getParams(escaped)
+        this._globalRender(params)
+      })
+    }
+    if(unescapedBlocksList != null) {
+      unescapedBlocksList.forEach((unescaped) => {
+        let params = this.getParams(unescaped)
+        this._globalRender(params)
+      })
+    }
+  }
+  _globalRender(parameters) {
+    /// On va faire dans mon cas présent et ensuite on poussera dans le vice ultime ahaha !
+    let compiled_data;
+    console.log('parameters for rendering blocks', parameters)
+    if(parameters.vars.length > 0) {
+      compiled_data = this._renderVars(parameters.vars)
+    }
+    // a faire pour les autres types operateurs blabla et bla
+    this.builder('replace', {block: parameters.currentStr, to: compiled_data})
+
+  }
   _renderVars(vars) {
     let rtn;
     if(vars && vars instanceof Array) {
       rtn = new Array();
       vars.forEach((variable) => {
-        rtn.push(this._bld.variables[variable.substr(1)])
+        if(this._bld.variables[variable.substr(1)] != undefined) {
+          rtn.push(this._bld.variables[variable.substr(1)])
+        }
+        else {
+          rtn.push('')
+        }
       })
     }
     else {
-      rtn = this._bld.variables[vars.substr(1)]
+      if(this._bld.variables[vars.substr(1)] != undefined) {
+        rtn = this._bld.variables[vars.substr(1)]
+      }
+      else {
+        rtn = '' // like twig, this no throw aan error when variables not exist
+      }
     }
 
     return rtn;
@@ -233,18 +275,20 @@ class parser {
     this.patterns.forEach((pattern) => {
 
       var val;
-      // console.log('typeof pattern.Regex', typeof pattern.Regex)
+      // console.log('pattern called', pattern)
 
       if(pattern.Regex.inline && pattern.Regex.block) {
         console.log('you must compare')
         // console.log('pattern.name', pattern.name)
-        var str2 = pattern.Regex.block.exec(str)
-        if(str2 != null) {
+
+
+        if(pattern.Regex.block.test(str) === true) {
+          var str2 = pattern.Regex.block.exec(str)
           val = this.normalizerBothDirective(str2.input, pattern.name)
         }
       }
       else {
-        if(str.match(pattern.Regex) != null) {
+        if(pattern.Regex.test(str) === true) {
           // console.log('pattern.name '+pattern.name, pattern.name)
           val = str.match(pattern.Regex)
         }
@@ -253,6 +297,7 @@ class parser {
         directives[pattern.name].render(val, this)
       }
     })
+    this.renderBlocks();
   }
   precompile(str, func) {
 
