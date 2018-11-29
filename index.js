@@ -3,6 +3,8 @@ let myHTMLTokenizer = require('./libs/tokenizer.conf.js').instance2;
 let parser = require('./libs/parser');
 let directiveManager = require('./libs/directives');
 let helpersManager = require('./libs/helpers');
+var pretty = require('pretty');
+
 
 var fs = require( 'fs' );
 var path = require( 'path' );
@@ -55,6 +57,9 @@ class bladeRender {
         // console.log('precompiled', precompiled)
         bladeParser.compile(precompiled, (html) => {
           console.log('html', html)
+          // en attendant la gestion des erreurs
+          let err = null;
+          callback(err, pretty(html))
         })
       })
 

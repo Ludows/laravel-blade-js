@@ -167,7 +167,7 @@ class parser {
   _globalRender(parameters) {
     /// On va faire dans mon cas présent et ensuite on poussera dans le vice ultime ahaha !
     let compiled_data;
-    console.log('parameters for rendering blocks', parameters)
+    // console.log('parameters for rendering blocks', parameters)
     if(parameters.vars.length > 0) {
       compiled_data = this._renderVars(parameters.vars)
     }

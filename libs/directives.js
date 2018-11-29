@@ -21,7 +21,7 @@ var directives = {
   section: {
     type: 'both',
     render : (arr, parser) => {
-      console.log('arr of sections', arr)
+      // console.log('arr of sections', arr)
         arr.forEach((section) => {
           // console.log('section ?', section);
           let params = parser.getParams(section);
