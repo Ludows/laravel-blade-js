@@ -208,7 +208,7 @@ class parser {
         rtn = this._bld.variables[vars.substr(1)]
       }
       else {
-        rtn = '' // like twig, this no throw aan error when variables not exist
+        this.handleError() 
       }
     }
 
@@ -272,7 +272,7 @@ class parser {
         break;
       case 'find':
         var re = new RegExp(code, 'g');
-        // console.log(re)
+        console.log(re)
         return this.html.match(re);
         break;
       case 'html':
@@ -299,8 +299,8 @@ class parser {
 
         if(pattern.Regex.block.test(str) === true) {
           var str2 =str.match(pattern.Regex.block)
-          console.log('str2', str2)
-          val = this.normalizerBothDirective(str2.input, pattern.name)
+          // console.log('str2', str2)
+          val = this.normalizerBothDirective(str2.toString(), pattern.name)
         }
       }
       else {

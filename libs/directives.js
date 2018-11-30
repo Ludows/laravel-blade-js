@@ -129,23 +129,35 @@ var directives = {
     render: (arr, parser) => {
       arr.forEach((stack) => {
         let params = parser.getParams(stack);
+        console.log(params)
         let name = parser.normalizeParams(params.defaultParams[0])
+        // console.log('name', name)
         var entryObj = parser.getTemp(name)
-        var test_in_parent_view = parser.builder('find', '@stack\\(\''+ entryObj.name +'\'\\)' )
-        if(test_in_parent_view != null) {
-          // Le bloc existe dans la vue parente
-          switch (entryObj.paramsLength) {
-            case 1:
-              parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
-              break;
-            default:
-              parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
-              break;
+        // console.log('entryObj', entryObj)
+        if(entryObj != undefined) {
+          var test_in_parent_view = parser.builder('find', '@stack\\(\''+ entryObj.name +'\'\\)' )
+          if(test_in_parent_view != null) {
+            // Le bloc existe dans la vue parente
+            switch (entryObj.paramsLength) {
+              case 1:
+                parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
+                break;
+              default:
+                parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
+                break;
+            }
           }
         }
         else {
+          var test_in_parent_view = parser.builder('find', '@stack\\(\''+ name +'\'\\)' )
+          // console.log('test_in_parent_view', test_in_parent_view)
+          if(test_in_parent_view != null) {
+            parser.builder('replace', {block: test_in_parent_view[0], to: '' })
+
+          }
           parser.handleError()
         }
+
 
       })
     }
