@@ -26,24 +26,14 @@ var directives = {
           // console.log('section ?', section);
           let params = parser.getParams(section);
           // console.log('params section', params)
-          // console.log('params length', params.length)
-          var test_in_parent_view = parser.builder('find', '@yield\\(\''+ parser.normalizeParams(params.defaultParams[0]) +'\'\\)' )
-          // console.log('test', test_in_parent_view)
-          if(test_in_parent_view != null) {
-            // Le bloc existe dans la vue parente
-            switch (params.defaultParams.length) {
-              case 1:
-                parser.builder('replace', {block: test_in_parent_view[0], to: parser.getContents(section, 'section')})
-                break;
-              default:
-                parser.builder('replace', {block: test_in_parent_view[0], to: parser.normalizeParams(params.defaultParams[1])})
-                break;
-            }
-
+          var obj = {
+            directive : 'section',
+            name: parser.normalizeParams(params.defaultParams[0]),
+            content: parser.getContents(section, 'section'),
+            currentStr: params.currentStr,
+            paramsLength: params.defaultParams.length
           }
-          else {
-            parser.handleError()
-          }
+          parser._sendToTemp(obj)
         })
 
     }
@@ -52,6 +42,36 @@ var directives = {
     type: 'block',
     render : (arr, parser) => {}
   },
+  yield: {
+    type: 'inline',
+    render : (arr, parser) => {
+      arr.forEach((yield) => {
+        // console.log('section ?', section);
+        let params = parser.getParams(yield);
+        // console.log('params yield', params)
+
+        let name = parser.normalizeParams(params.defaultParams[0])
+        var entryObj = parser.getTemp(name)
+        var test_in_parent_view = parser.builder('find', '@yield\\(\''+ entryObj.name +'\'\\)' )
+        // console.log('test', test_in_parent_view)
+        if(test_in_parent_view != null) {
+          // Le bloc existe dans la vue parente
+          switch (entryObj.paramsLength) {
+            case 1:
+              parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
+              break;
+            default:
+              parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
+              break;
+          }
+
+        }
+        else {
+          parser.handleError()
+        }
+      })
+    }
+  },
   if : {
     type: 'block',
     render: (arr, parser) => {
@@ -59,9 +79,6 @@ var directives = {
       // console.log('string if called', arr.length)
       arr.forEach((blk) => {
         let params = parser.getParams(blk);
-        // console.log("parser.getContents(blk, 'if')", parser.getContents(blk, 'if'))
-
-        // console.log("params if", params)
 
         // A Modifier dans le futur
 
@@ -95,13 +112,42 @@ var directives = {
   push : {
     type: 'block',
     render: (arr, parser) => {
-
+      arr.forEach((push) => {
+        let params = parser.getParams(push);
+        var obj = {
+          directive : 'push',
+          name: parser.normalizeParams(params.defaultParams[0]),
+          content: parser.getContents(push, 'push'),
+          currentStr: params.currentStr,
+        }
+        parser._sendToTemp(obj)
+      })
     }
   },
   stack : {
     type: 'inline',
     render: (arr, parser) => {
+      arr.forEach((stack) => {
+        let params = parser.getParams(stack);
+        let name = parser.normalizeParams(params.defaultParams[0])
+        var entryObj = parser.getTemp(name)
+        var test_in_parent_view = parser.builder('find', '@stack\\(\''+ entryObj.name +'\'\\)' )
+        if(test_in_parent_view != null) {
+          // Le bloc existe dans la vue parente
+          switch (entryObj.paramsLength) {
+            case 1:
+              parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
+              break;
+            default:
+              parser.builder('replace', {block: test_in_parent_view[0], to: entryObj.content })
+              break;
+          }
+        }
+        else {
+          parser.handleError()
+        }
 
+      })
     }
   },
   each : {

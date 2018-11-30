@@ -32,6 +32,7 @@ class parser {
     this._bld = bladeRender;
     this.patterns = this.paternify_directives(directives);
     this.operators = operatorsManager;
+    this.temp = [];
     this.utils = {
       variables : /\$[a-zA-Z_]+([a-zA-Z0-9_]*)/g,
       operators: /[\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+/g,
@@ -41,6 +42,20 @@ class parser {
       unescapedBlocks : /({!!)(?: |)([^]+?)(?: |)!!}/g,
 
     }
+  }
+  getTemp(name) {
+    let rtn;
+    console.log('name temp', name)
+    for (let i = 0; i < this.temp.length; i++) {
+      if(name && name === this.temp[i].name) {
+        rtn = this.temp[i];
+        break;
+      }
+    }
+    return rtn;
+  }
+  _sendToTemp(obj) {
+    return this.temp.push(obj)
   }
   getVars() {
     return this._bld.variables;
@@ -68,7 +83,7 @@ class parser {
        case 'both':
          objGenerated.Regex = new Object();
          objGenerated.Regex.inline = new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
-         objGenerated.Regex.block = new RegExp("\@"+directive+"\\(\\s*[\'\"](.*)[\'\"]\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
+         objGenerated.Regex.block = new RegExp("\@"+directive+"\\s*\\(\\s*(.*)\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
 
 
          break;
@@ -283,7 +298,8 @@ class parser {
 
 
         if(pattern.Regex.block.test(str) === true) {
-          var str2 = pattern.Regex.block.exec(str)
+          var str2 =str.match(pattern.Regex.block)
+          console.log('str2', str2)
           val = this.normalizerBothDirective(str2.input, pattern.name)
         }
       }

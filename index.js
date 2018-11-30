@@ -56,7 +56,7 @@ class bladeRender {
       bladeParser.precompile(code.toString(), (precompiled) => {
         // console.log('precompiled', precompiled)
         bladeParser.compile(precompiled, (html) => {
-          console.log('html', html)
+          // console.log('html', html)
           // en attendant la gestion des erreurs
           let err = null;
           callback(err, pretty(html))
