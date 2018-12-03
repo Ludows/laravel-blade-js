@@ -38,10 +38,6 @@ var directives = {
 
     }
   },
-  hasSection: {
-    type: 'block',
-    render : (arr, parser) => {}
-  },
   yield: {
     type: 'inline',
     render : (arr, parser) => {
@@ -71,6 +67,10 @@ var directives = {
         }
       })
     }
+  },
+  hasSection: {
+    type: 'block',
+    render : (arr, parser) => {}
   },
   if : {
     type: 'block',
@@ -129,7 +129,7 @@ var directives = {
     render: (arr, parser) => {
       arr.forEach((stack) => {
         let params = parser.getParams(stack);
-        console.log(params)
+        // console.log(params)
         let name = parser.normalizeParams(params.defaultParams[0])
         // console.log('name', name)
         var entryObj = parser.getTemp(name)
@@ -171,7 +171,29 @@ var directives = {
   include: {
     type: 'inline',
     render: (arr, parser) => {
+      arr.forEach((include) => {
+        let include_rt;
+        // console.log('parser', parser)
+        let params = parser.getParams(include);
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        console.log('fullPath', fullPath)
+        include_rt = fs.readFileSync(fullPath)
+        console.log('include_rt', include_rt.toString())
+        let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+        var test_in_parent_view = parser.builder('find', '@include\\(\''+ name +'\'\\)' )
+        console.log('test_in_parent_view', test_in_parent_view)
+        if(test_in_parent_view != null) {
+          parser.builder('replace', {block: test_in_parent_view[0], to: include_rt.toString()})
+        }
+        else {
+          parser.handleError();
+        }
+        // console.log('html updated ?', parser.builder('html'))
 
+
+
+
+      })
     }
   },
   includeIf: {
@@ -195,6 +217,10 @@ var directives = {
   component: {
     type: 'block',
     render: (arr, parser) => {
+      arr.forEach((component) => {
+        let params = parser.getParams(component);
+        let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.defaultParams[0])+this.options.extension);
+      })
 
     }
   },

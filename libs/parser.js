@@ -40,12 +40,13 @@ class parser {
       defaultParams: /\'(.*?)\'|\"(.*?)\"/g,
       escapedBlocks : /({{)(?: |)([^]+?)(?: |)}}/g,
       unescapedBlocks : /({!!)(?: |)([^]+?)(?: |)!!}/g,
+      directives: /(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g
 
     }
   }
   getTemp(name) {
     let rtn;
-    console.log('name temp', name)
+    // console.log('name temp', name)
     for (let i = 0; i < this.temp.length; i++) {
       if(name && name === this.temp[i].name) {
         rtn = this.temp[i];
@@ -199,7 +200,7 @@ class parser {
           rtn.push(this._bld.variables[variable.substr(1)])
         }
         else {
-          rtn.push('')
+          this.handleError()
         }
       })
     }
@@ -208,7 +209,7 @@ class parser {
         rtn = this._bld.variables[vars.substr(1)]
       }
       else {
-        this.handleError() 
+        this.handleError()
       }
     }
 
@@ -224,6 +225,23 @@ class parser {
     let bool = false;
     let arr = entry.match(this.utils.variables)
     if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, vars : arr , currentStr : entry}
+  }
+  _hasDirectives(entry) {
+    let bool = false;
+    let arr = entry.match(this.utils.directives)
+    if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, vars : arr , currentStr : entry}
+  }
+  _hasBlocks(entry) {
+    let bool = false;
+    let arr = entry.match(this.utils.unescapedBlocks)
+    let arr2 = entry.match(this.utils.escapedBlocks)
+    if(arr != null || arr2 != null) {
       bool = true;
     }
     return {response : bool, vars : arr , currentStr : entry}
@@ -271,6 +289,7 @@ class parser {
         this.html = this.html.replace(code.block, code.to);
         break;
       case 'find':
+      // console.log('before find', this.html)
         var re = new RegExp(code, 'g');
         console.log(re)
         return this.html.match(re);
@@ -289,13 +308,10 @@ class parser {
   _initCompilationProcess(str) {
     this.patterns.forEach((pattern) => {
 
+
       var val;
-      // console.log('pattern called', pattern)
 
       if(pattern.Regex.inline && pattern.Regex.block) {
-        console.log('you must compare')
-        // console.log('pattern.name', pattern.name)
-
 
         if(pattern.Regex.block.test(str) === true) {
           var str2 =str.match(pattern.Regex.block)
@@ -304,33 +320,47 @@ class parser {
         }
       }
       else {
-        if(pattern.Regex.test(str) === true) {
+        if(str.match(pattern.Regex) != null) {
           // console.log('pattern.name '+pattern.name, pattern.name)
           val = str.match(pattern.Regex)
         }
       }
       if(val != null) {
+        console.log('pattern render called '+ pattern.name)
         directives[pattern.name].render(val, this)
       }
     })
     this.renderBlocks();
   }
-  precompile(str, func) {
+  moreCompilationIsNeeded(str) {
+    let rtn = false;
+    let directives = this._hasDirectives(str)
+    let blocks = this._hasBlocks(str)
 
-    // console.log('str html', str)
-    this._initCompilationProcess(str)
-
-    if(func && typeof func === 'function') {
-      func(this.builder('html'));
+    // console.log('as directives ?', directives)
+    if(blocks.response != null || directives.response != null) {
+      rtn = true;
     }
+    return { response: rtn, taille: directives.vars.length + 1};
   }
   compile(str, func) {
 
     this._initCompilationProcess(str)
+
+    var precompiled = this.builder('html')
+    let moreCompilation = this.moreCompilationIsNeeded(precompiled)
+    console.log('moreCompilation', moreCompilation)
+    if(moreCompilation.response === true) {
+      for (let i = 0; i < moreCompilation.taille; i++) {
+        let forCompile = this.builder('html')
+        this._initCompilationProcess(forCompile)
+		  }
+    }
     if(func && typeof func === 'function') {
       func(this.builder('html'));
     }
   }
+
 }
 
 module.exports = parser;

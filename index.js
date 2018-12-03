@@ -14,7 +14,7 @@ class bladeRender {
     var defaults = {
       cache : true,
       cacheDir: '',
-      componentsDir: '',
+      componentsDir: 'components',
       views: '',
       extension: '.bjs'
     }
@@ -51,17 +51,11 @@ class bladeRender {
       // blade parser start here
       // we synchronise the bladeRenderer to parser
       let bladeParser = new parser(this);
-      // console.log('bladeParser', bladeParser)
-      // return an array of object
-      bladeParser.precompile(code.toString(), (precompiled) => {
-        // console.log('precompiled', precompiled)
-        bladeParser.compile(precompiled, (html) => {
-          // console.log('html', html)
+        bladeParser.compile(code.toString(), (html) => {
           // en attendant la gestion des erreurs
           let err = null;
           callback(err, pretty(html))
         })
-      })
 
     });
   }
