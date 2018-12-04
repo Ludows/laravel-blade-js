@@ -67,7 +67,6 @@ class parser {
   paternify_directives(object) {
     let resultArr = new Array();
     for (var directive in object) {
-      // console.log('directive', object[directive])
 
       var objGenerated = {
         name: directive,
@@ -79,7 +78,7 @@ class parser {
           objGenerated.Regex =  new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
           break;
         case 'block':
-          objGenerated.Regex = new RegExp("\@"+directive+"\\s*\\(\\s*(.*)\\s*\\)((?:(?!\@show|\@stop|\@end"+directive+").*\\s*)*)(\@show|\@stop|\@end"+directive+")", 'gi')
+          objGenerated.Regex = new RegExp("(@"+directive+")(?: |)([^]+?)(?: |)\@end"+directive, 'gi')
           break;
        case 'both':
          objGenerated.Regex = new Object();
@@ -152,10 +151,12 @@ class parser {
     let rtn;
     var re = /(\(([^()]*)\))|(\{\{([^]*)\}\})|(\{\!\!([^]*)\!\!\})/g
     var string_to_test = entry.match(re)[0]
+    console.log('_parseParams matching', string_to_test)
     rtn = {
       vars : this._hasVariables(string_to_test).vars,
       helpers: this._hasHelperCall(string_to_test).helpers,
       blocks: string_to_test.includes('{') ? "escaped" : "unescaped",
+      directives: this._hasDirectives(string_to_test).vars,
       operators: this._hasOperators(string_to_test).operators,
       defaultParams: this._getBasicParameters(string_to_test).params,
       currentStr: string_to_test
@@ -291,7 +292,7 @@ class parser {
       case 'find':
       // console.log('before find', this.html)
         var re = new RegExp(code, 'g');
-        console.log(re)
+        // console.log(re)
         return this.html.match(re);
         break;
       case 'html':

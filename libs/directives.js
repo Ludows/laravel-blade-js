@@ -172,13 +172,14 @@ var directives = {
     type: 'inline',
     render: (arr, parser) => {
       arr.forEach((include) => {
+        // console.log('component', arr)
         let include_rt;
         // console.log('parser', parser)
         let params = parser.getParams(include);
         let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
-        console.log('fullPath', fullPath)
+        // console.log('fullPath', fullPath)
         include_rt = fs.readFileSync(fullPath)
-        console.log('include_rt', include_rt.toString())
+        // console.log('include_rt', include_rt.toString())
         let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
         var test_in_parent_view = parser.builder('find', '@include\\(\''+ name +'\'\\)' )
         console.log('test_in_parent_view', test_in_parent_view)
@@ -188,11 +189,6 @@ var directives = {
         else {
           parser.handleError();
         }
-        // console.log('html updated ?', parser.builder('html'))
-
-
-
-
       })
     }
   },
@@ -217,10 +213,29 @@ var directives = {
   component: {
     type: 'block',
     render: (arr, parser) => {
+      console.log('component', arr)
       arr.forEach((component) => {
+        let component_rt;
         let params = parser.getParams(component);
-        let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.defaultParams[0])+this.options.extension);
+        let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        component_rt = fs.readFileSync(fullPathToView)
+        console.log('component_rt', component_rt)
+
+        console.log('params ?', params)
+        // var obj = {
+        //   directive : 'push',
+        //   name: parser.normalizeParams(params.defaultParams[0]),
+        //   content: parser.getContents(push, 'push'),
+        //   currentStr: params.currentStr,
+        // }
+        // parser._sendToTemp(obj)
       })
+
+    }
+  },
+  slot: {
+    type:'block',
+    render:(arr, parser) => {
 
     }
   },

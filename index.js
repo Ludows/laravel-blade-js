@@ -51,6 +51,7 @@ class bladeRender {
       // blade parser start here
       // we synchronise the bladeRenderer to parser
       let bladeParser = new parser(this);
+      // console.log('bladeParser', bladeParser)
         bladeParser.compile(code.toString(), (html) => {
           // en attendant la gestion des erreurs
           let err = null;
