@@ -78,7 +78,7 @@ class parser {
           objGenerated.Regex =  new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
           break;
         case 'block':
-          objGenerated.Regex = new RegExp("(@"+directive+")(?: |)([^]+?)(?: |)\@end"+directive, 'gi')
+          objGenerated.Regex = new RegExp("\@"+directive+"(?: |)([^]+?)(?: |)\@end"+directive, 'gi')
           break;
        case 'both':
          objGenerated.Regex = new Object();
@@ -134,7 +134,8 @@ class parser {
     }
     else {
       let re = new RegExp(/(.*)/, 'g');
-      var contents = entry.match(re);
+      var contents = entry.split(re);
+      console.log('contents', contents)
       contents.forEach((content) => {
         if(content.includes("@"+pattern) == false && content.includes("@end"+pattern) == false) {
           rtn += content;
@@ -151,7 +152,7 @@ class parser {
     let rtn;
     var re = /(\(([^()]*)\))|(\{\{([^]*)\}\})|(\{\!\!([^]*)\!\!\})/g
     var string_to_test = entry.match(re)[0]
-    console.log('_parseParams matching', string_to_test)
+    // console.log('_parseParams matching', string_to_test)
     rtn = {
       vars : this._hasVariables(string_to_test).vars,
       helpers: this._hasHelperCall(string_to_test).helpers,
@@ -237,6 +238,60 @@ class parser {
       bool = true;
     }
     return {response : bool, vars : arr , currentStr : entry}
+  }
+  hasDirective(name, str) {
+    // console.log('name', name)
+    // console.log('str', str)
+    let vl;
+    let content;
+    let dtves = this.patterns;
+
+    if(str && typeof str === 'string') {
+      content = str
+    }
+    else {
+      content = this.html
+    }
+
+    for (var i = 0; i < dtves.length; i++) {
+      if(dtves[i].name === name && dtves[i].type != 'both') {
+        vl = content.match(dtves[i].Regex)
+        break;
+      }
+      else if(dtves[i].name === name && dtves[i].type === 'both') {
+        vl = content.match(dtves[i].Regex.block)
+        break;
+      }
+    }
+
+    return vl;
+  }
+  hasVar(name, str) {
+    // console.log('name', name)
+    // console.log('str', str)
+    let vl;
+    let content;
+    let dtves = this.patterns;
+
+    if(str && typeof str === 'string') {
+      content = str
+    }
+    else {
+      content = this.html
+    }
+
+    // for (var i = 0; i < dtves.length; i++) {
+    //   if(dtves[i].name === name && dtves[i].type != 'both') {
+    //     vl = content.match(dtves[i].Regex)
+    //     break;
+    //   }
+    //   else if(dtves[i].name === name && dtves[i].type === 'both') {
+    //     vl = content.match(dtves[i].Regex.block)
+    //     break;
+    //   }
+    // }
+
+    return vl;
   }
   _hasBlocks(entry) {
     let bool = false;

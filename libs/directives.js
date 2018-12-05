@@ -182,7 +182,7 @@ var directives = {
         // console.log('include_rt', include_rt.toString())
         let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
         var test_in_parent_view = parser.builder('find', '@include\\(\''+ name +'\'\\)' )
-        console.log('test_in_parent_view', test_in_parent_view)
+        // console.log('test_in_parent_view', test_in_parent_view)
         if(test_in_parent_view != null) {
           parser.builder('replace', {block: test_in_parent_view[0], to: include_rt.toString()})
         }
@@ -218,17 +218,22 @@ var directives = {
         let component_rt;
         let params = parser.getParams(component);
         let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
-        component_rt = fs.readFileSync(fullPathToView)
+        component_rt = fs.readFileSync(fullPathToView).toString()
         console.log('component_rt', component_rt)
+        // console.log('component', component.toString().match(/(\@slot)(?: |)([^]+?)(?: |)\@endslot/gi))
+        let slots = parser.hasDirective('slot', component.toString())
+        // console.log('slots', slots)
+        if(slots != null) {
+          // Nous avons des slots à gérer
+          slots.forEach((slot) => {
+            let slotParams = parser.getParams(slot);
+            let slotContent = parser.getContents(slot, 'slot');
+            console.log('slotParams', slotParams)
+            console.log('slotContent', slotContent)
+          })
+        }
 
-        console.log('params ?', params)
-        // var obj = {
-        //   directive : 'push',
-        //   name: parser.normalizeParams(params.defaultParams[0]),
-        //   content: parser.getContents(push, 'push'),
-        //   currentStr: params.currentStr,
-        // }
-        // parser._sendToTemp(obj)
+
       })
 
     }
@@ -236,7 +241,7 @@ var directives = {
   slot: {
     type:'block',
     render:(arr, parser) => {
-
+      console.log('slot arr', arr)
     }
   },
   verbatim: {
