@@ -135,7 +135,7 @@ class parser {
     else {
       let re = new RegExp(/(.*)/, 'g');
       var contents = entry.split(re);
-      console.log('contents', contents)
+      // console.log('contents', contents)
       contents.forEach((content) => {
         if(content.includes("@"+pattern) == false && content.includes("@end"+pattern) == false) {
           rtn += content;
@@ -279,6 +279,16 @@ class parser {
     else {
       content = this.html
     }
+
+    // escapedBlocks : /({{)(?: |)([^]+?)(?: |)}}/g,
+    // unescapedBlocks : /({!!)(?: |)([^]+?)(?: |)!!}/g,
+
+    var re = new RegExp("({{)(?: |)(\\$"+ name +")(?: |)}}|({!!)(?: |)(\\$"+ name +")(?: |)!!}", 'g');
+    // console.log('content hasvar regex', content)
+
+    vl = content.match(re)[0]
+    // console.log('test hasVar', matching)
+
 
     // for (var i = 0; i < dtves.length; i++) {
     //   if(dtves[i].name === name && dtves[i].type != 'both') {

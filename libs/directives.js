@@ -216,23 +216,41 @@ var directives = {
       console.log('component', arr)
       arr.forEach((component) => {
         let component_rt;
+        var condition_to_extract;
         let params = parser.getParams(component);
         let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
         component_rt = fs.readFileSync(fullPathToView).toString()
-        console.log('component_rt', component_rt)
-        // console.log('component', component.toString().match(/(\@slot)(?: |)([^]+?)(?: |)\@endslot/gi))
+        parser.builder('replace', {block: component, to: component_rt})
+
         let slots = parser.hasDirective('slot', component.toString())
         // console.log('slots', slots)
         if(slots != null) {
           // Nous avons des slots à gérer
           slots.forEach((slot) => {
             let slotParams = parser.getParams(slot);
-            let slotContent = parser.getContents(slot, 'slot');
-            console.log('slotParams', slotParams)
-            console.log('slotContent', slotContent)
+
+            condition_to_extract = parser.hasVar(parser.normalizeParams(slotParams.defaultParams[0]), component_rt)
+            if(condition_to_extract.length > 0) {
+              let slotContent = parser.getContents(slot, 'slot');
+              component = component.replace(slot, '');
+              parser.builder('replace', {block: condition_to_extract, to: slotContent})
+            }
+            else {
+              parser.handleError();
+            }
           })
+          // console.log(parser.builder('html'))
         }
 
+        condition_to_extract = parser.hasVar('slot', component_rt)
+
+        if(condition_to_extract.length > 0) {
+          let lastContents = parser.getContents(component, 'component');
+          parser.builder('replace', {block: condition_to_extract, to: lastContents})
+        }
+        else {
+          parser.handleError();
+        }
 
       })
 
@@ -288,6 +306,18 @@ var directives = {
   },
   while: {
     type: 'block',
+    render: (arr, parser) => {
+
+    }
+  },
+  continue: {
+    type: 'inline',
+    render: (arr, parser) => {
+
+    }
+  },
+  break: {
+    type: 'inline',
     render: (arr, parser) => {
 
     }
