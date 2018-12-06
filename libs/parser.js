@@ -75,7 +75,7 @@ class parser {
       }
       switch (object[directive].type) {
         case 'inline':
-          objGenerated.Regex =  new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)", 'gi')
+          objGenerated.Regex =  new RegExp("\@"+directive+"\\([\'\"](.*)[\'\"]\s*\,\s*[\'\"](.*)[\'\"]\\)|\@"+directive+"\\([\'\"](.*)[\'\"]\s*\\)|\@"+directive+"\\((\s*|.*)\\)", 'gi')
           break;
         case 'block':
           objGenerated.Regex = new RegExp("\@"+directive+"(?: |)([^]+?)(?: |)\@end"+directive, 'gi')
@@ -280,26 +280,11 @@ class parser {
       content = this.html
     }
 
-    // escapedBlocks : /({{)(?: |)([^]+?)(?: |)}}/g,
-    // unescapedBlocks : /({!!)(?: |)([^]+?)(?: |)!!}/g,
-
     var re = new RegExp("({{)(?: |)(\\$"+ name +")(?: |)}}|({!!)(?: |)(\\$"+ name +")(?: |)!!}", 'g');
     // console.log('content hasvar regex', content)
 
     vl = content.match(re)[0]
-    // console.log('test hasVar', matching)
 
-
-    // for (var i = 0; i < dtves.length; i++) {
-    //   if(dtves[i].name === name && dtves[i].type != 'both') {
-    //     vl = content.match(dtves[i].Regex)
-    //     break;
-    //   }
-    //   else if(dtves[i].name === name && dtves[i].type === 'both') {
-    //     vl = content.match(dtves[i].Regex.block)
-    //     break;
-    //   }
-    // }
 
     return vl;
   }
@@ -333,6 +318,10 @@ class parser {
     let arr = entry.match(this.utils.operators)
     if(arr != null) {
       bool = true;
+    }
+    if(entry.includes('[') && entry.includes(']')) {
+      // cela ne peut pas être un opérateur, ici nous rentrons dans le cas d'un array
+      arr = null;
     }
     return {response : bool, operators : arr}
   }

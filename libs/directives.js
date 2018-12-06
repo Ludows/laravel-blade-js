@@ -196,7 +196,7 @@ var directives = {
   includeIf: {
     type: 'inline',
     render: (arr, parser) => {
-      console.log('includeIf arr', arr)
+      // console.log('includeIf arr', arr)
       arr.forEach((includeIf) => {
         // console.log('component', arr)
         let includeIf_rt;
@@ -204,24 +204,59 @@ var directives = {
         let params = parser.getParams(includeIf);
         let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
         // console.log('fullPath', fullPath)
-        includeIf_rt = fs.readFileSync(fullPath)
-        // console.log('include_rt', include_rt.toString())
-        let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
-        var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
-        // console.log('test_in_parent_view', test_in_parent_view)
-        if(test_in_parent_view != null) {
-          parser.builder('replace', {block: test_in_parent_view[0], to: include_rt.toString()})
+        var existPath = fs.existsSync(fullPath)
+        // console.log('test', test)
+        if(existPath === true) {
+          includeIf_rt = fs.readFileSync(fullPath)
+          // console.log('test_in_parent_view', test_in_parent_view)
+          let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+          var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
+          if(test_in_parent_view != null) {
+            parser.builder('replace', {block: test_in_parent_view[0], to: include_rt.toString()})
+          }
+          else {
+            parser.handleError();
+          }
         }
         else {
-          parser.handleError();
+          parser.builder('replace', {block: includeIf, to: ''})
         }
+
       })
     }
   },
   includeWhen: {
     type: 'inline',
     render: (arr, parser) => {
+      console.log('includeWhen', arr)
+        console.log('includeWhen length', arr.length)
+      arr.forEach((includeWhen) => {
+        // console.log('component', arr)
+        let includeWhen_rt;
+        // console.log('parser', parser)
+        let params = parser.getParams(includeWhen);
+        console.log('params includeWhen', params)
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        // console.log('fullPath', fullPath)
+        // var existPath = fs.existsSync(fullPath)
+        // // console.log('test', test)
+        // if(existPath === true) {
+        //   includeWhen_rt = fs.readFileSync(fullPath)
+        //   // console.log('test_in_parent_view', test_in_parent_view)
+        //   let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+        //   var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
+        //   if(test_in_parent_view != null) {
+        //     parser.builder('replace', {block: test_in_parent_view[0], to: includeWhen_rt.toString()})
+        //   }
+        //   else {
+        //     parser.handleError();
+        //   }
+        // }
+        // else {
+        //   parser.builder('replace', {block: includeWhen, to: ''})
+        // }
 
+      })
     }
   },
   includeFirst: {
@@ -233,7 +268,7 @@ var directives = {
   component: {
     type: 'block',
     render: (arr, parser) => {
-      console.log('component', arr)
+      // console.log('component', arr)
       arr.forEach((component) => {
         let component_rt;
         var condition_to_extract;
