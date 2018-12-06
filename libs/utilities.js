@@ -1,6 +1,5 @@
 function empty(data)
 {
-  console.log('utilites', data)
   if(typeof(data) == 'number' || typeof(data) == 'boolean')
   {
     return false;

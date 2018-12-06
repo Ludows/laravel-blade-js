@@ -196,7 +196,26 @@ var directives = {
   includeIf: {
     type: 'inline',
     render: (arr, parser) => {
-
+      console.log('includeIf arr', arr)
+      arr.forEach((includeIf) => {
+        // console.log('component', arr)
+        let includeIf_rt;
+        // console.log('parser', parser)
+        let params = parser.getParams(includeIf);
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        // console.log('fullPath', fullPath)
+        includeIf_rt = fs.readFileSync(fullPath)
+        // console.log('include_rt', include_rt.toString())
+        let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+        var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
+        // console.log('test_in_parent_view', test_in_parent_view)
+        if(test_in_parent_view != null) {
+          parser.builder('replace', {block: test_in_parent_view[0], to: include_rt.toString()})
+        }
+        else {
+          parser.handleError();
+        }
+      })
     }
   },
   includeWhen: {
@@ -260,7 +279,19 @@ var directives = {
   slot: {
     type:'block',
     render:(arr, parser) => {
-      console.log('slot arr', arr)
+      // console.log('slot arr', arr)
+    }
+  },
+  csrf: {
+    type:'inline',
+    render:(arr, parser) => {
+      // console.log('slot arr', arr)
+    }
+  },
+  json: {
+    type:'inline',
+    render:(arr, parser) => {
+      // console.log('slot arr', arr)
     }
   },
   verbatim: {
@@ -299,6 +330,12 @@ var directives = {
           parser.builder('replace', {block: empty, to: ''})
         }
       })
+    }
+  },
+  php: {
+    type: 'block',
+    render: (arr, parser) => {
+
     }
   },
   switch: {
