@@ -1,5 +1,6 @@
 let fs = require('fs');
 let path = require('path');
+const utilties = require('./utilities')
 
 var directives = {
 
@@ -271,13 +272,33 @@ var directives = {
   isset: {
     type: 'block',
     render: (arr, parser) => {
-
+      arr.forEach((isset) => {
+        let params = parser.getParams(isset);
+        let vars = parser._renderVars(params.vars[0]);
+        let content = parser.getContents(isset, 'isset')
+        if(utilties.empty(vars) === false) {
+          parser.builder('replace', {block: isset, to: content})
+        }
+        else {
+          parser.builder('replace', {block: isset, to: ''})
+        }
+      })
     }
   },
   empty: {
     type: 'block',
     render: (arr, parser) => {
-
+      arr.forEach((empty) => {
+        let params = parser.getParams(empty);
+        let vars = parser._renderVars(params.vars[0]);
+        let content = parser.getContents(empty, 'empty')
+        if(utilties.empty(vars) === true) {
+          parser.builder('replace', {block: empty, to: content})
+        }
+        else {
+          parser.builder('replace', {block: empty, to: ''})
+        }
+      })
     }
   },
   switch: {
