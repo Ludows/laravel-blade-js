@@ -12,8 +12,8 @@ var directives = {
         // console.log('extends start', obj)
         let params = parser.getParams(extend)
         // console.log('params', params)
-        // console.log('parser.normalizeParams(params[0])', parser.normalizeParams(params.defaultParams[0]))
-        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        // console.log('parser.normalizeParams(params[0])', parser.normalizeParams(params.stringParameters[0]))
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.stringParameters[0])+parser._bld.options.extension);
         extend_rt = fs.readFileSync(fullPath)
         parser.builder('append', extend_rt);
       })
@@ -29,10 +29,10 @@ var directives = {
           // console.log('params section', params)
           var obj = {
             directive : 'section',
-            name: parser.normalizeParams(params.defaultParams[0]),
+            name: parser.normalizeParams(params.stringParameters[0]),
             content: parser.getContents(section, 'section'),
             currentStr: params.currentStr,
-            paramsLength: params.defaultParams.length
+            paramsLength: params.stringParameters.length
           }
           parser._sendToTemp(obj)
         })
@@ -47,7 +47,7 @@ var directives = {
         let params = parser.getParams(yield);
         // console.log('params yield', params)
 
-        let name = parser.normalizeParams(params.defaultParams[0])
+        let name = parser.normalizeParams(params.stringParameters[0])
         var entryObj = parser.getTemp(name)
         var test_in_parent_view = parser.builder('find', '@yield\\(\''+ entryObj.name +'\'\\)' )
         // console.log('test', test_in_parent_view)
@@ -90,7 +90,7 @@ var directives = {
         let renderedVars = parser._renderVars(params.vars)[0]
         let ops = parser.normalizeParams(params.operators[0])
         let content = parser.getContents(blk, 'if')
-        let defaultParam = parser.normalizeParams(params.defaultParams[0])
+        let defaultParam = parser.normalizeParams(params.stringParameters[0])
 
         let result = parser.evaluate(params.operators[0], renderedVars, defaultParam)
 
@@ -117,7 +117,7 @@ var directives = {
         let params = parser.getParams(push);
         var obj = {
           directive : 'push',
-          name: parser.normalizeParams(params.defaultParams[0]),
+          name: parser.normalizeParams(params.stringParameters[0]),
           content: parser.getContents(push, 'push'),
           currentStr: params.currentStr,
         }
@@ -131,7 +131,7 @@ var directives = {
       arr.forEach((stack) => {
         let params = parser.getParams(stack);
         // console.log(params)
-        let name = parser.normalizeParams(params.defaultParams[0])
+        let name = parser.normalizeParams(params.stringParameters[0])
         // console.log('name', name)
         var entryObj = parser.getTemp(name)
         // console.log('entryObj', entryObj)
@@ -177,11 +177,11 @@ var directives = {
         let include_rt;
         // console.log('parser', parser)
         let params = parser.getParams(include);
-        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.stringParameters[0])+parser._bld.options.extension);
         // console.log('fullPath', fullPath)
         include_rt = fs.readFileSync(fullPath)
         // console.log('include_rt', include_rt.toString())
-        let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+        let name = params.stringParameters[0].replace('.', '\\.').replace("'", '').replace("'", '');
         var test_in_parent_view = parser.builder('find', '@include\\(\''+ name +'\'\\)' )
         // console.log('test_in_parent_view', test_in_parent_view)
         if(test_in_parent_view != null) {
@@ -202,14 +202,14 @@ var directives = {
         let includeIf_rt;
         // console.log('parser', parser)
         let params = parser.getParams(includeIf);
-        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.stringParameters[0])+parser._bld.options.extension);
         // console.log('fullPath', fullPath)
         var existPath = fs.existsSync(fullPath)
         // console.log('test', test)
         if(existPath === true) {
           includeIf_rt = fs.readFileSync(fullPath)
           // console.log('test_in_parent_view', test_in_parent_view)
-          let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+          let name = params.stringParameters[0].replace('.', '\\.').replace("'", '').replace("'", '');
           var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
           if(test_in_parent_view != null) {
             parser.builder('replace', {block: test_in_parent_view[0], to: include_rt.toString()})
@@ -234,16 +234,16 @@ var directives = {
         // console.log('component', arr)
         let includeWhen_rt;
         // console.log('parser', parser)
-        let params = parser.getParams(includeWhen);
+        let params = parser.getParams(includeWhen.toString());
         console.log('params includeWhen', params)
-        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.stringParameters[0])+parser._bld.options.extension);
         // console.log('fullPath', fullPath)
         // var existPath = fs.existsSync(fullPath)
         // // console.log('test', test)
         // if(existPath === true) {
         //   includeWhen_rt = fs.readFileSync(fullPath)
         //   // console.log('test_in_parent_view', test_in_parent_view)
-        //   let name = params.defaultParams[0].replace('.', '\\.').replace("'", '').replace("'", '');
+        //   let name = params.stringParameters[0].replace('.', '\\.').replace("'", '').replace("'", '');
         //   var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
         //   if(test_in_parent_view != null) {
         //     parser.builder('replace', {block: test_in_parent_view[0], to: includeWhen_rt.toString()})
@@ -273,7 +273,7 @@ var directives = {
         let component_rt;
         var condition_to_extract;
         let params = parser.getParams(component);
-        let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.defaultParams[0])+parser._bld.options.extension);
+        let fullPathToView = path.join(parser._bld.options.views, parser._bld.options.componentsDir, parser.normalizeParams(params.stringParameters[0])+parser._bld.options.extension);
         component_rt = fs.readFileSync(fullPathToView).toString()
         parser.builder('replace', {block: component, to: component_rt})
 
@@ -284,7 +284,7 @@ var directives = {
           slots.forEach((slot) => {
             let slotParams = parser.getParams(slot);
 
-            condition_to_extract = parser.hasVar(parser.normalizeParams(slotParams.defaultParams[0]), component_rt)
+            condition_to_extract = parser.hasVar(parser.normalizeParams(slotParams.stringParameters[0]), component_rt)
             if(condition_to_extract.length > 0) {
               let slotContent = parser.getContents(slot, 'slot');
               component = component.replace(slot, '');

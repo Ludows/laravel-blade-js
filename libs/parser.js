@@ -37,10 +37,11 @@ class parser {
       variables : /\$[a-zA-Z_]+([a-zA-Z0-9_]*)/g,
       operators: /[\+\-\*\%\=\&\|\~\^\<\>\?\:\!\/]+/g,
       helpers: /([a-z0-9]+)\((.*)\)(\t|\r|\s)*\W|\s([a-z0-9]+)\((.*)\)(\t|\r|\s)*\W/gi,
-      defaultParams: /\'(.*?)\'|\"(.*?)\"/g,
+      stringParameters: /\'(.*?)\'|\"(.*?)\"/g,
       escapedBlocks : /({{)(?: |)([^]+?)(?: |)}}/g,
       unescapedBlocks : /({!!)(?: |)([^]+?)(?: |)!!}/g,
-      directives: /(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g
+      directives: /(@\w+)(?: |)([^]+?)(?: |)\@end\w+/g,
+      array: /\[(.*?)\]/g
 
     }
   }
@@ -107,7 +108,7 @@ class parser {
 
     inlineDir_test.forEach((inline) => {
       var pars = this.getParams(inline)
-      if(pars.defaultParams.length < 2) {
+      if(pars.stringParameters.length < 2) {
         excludes_blocks.push(inline)
         let idx = inlineDir_test.indexOf(inline);
         inlineDir_test.splice(idx, 1)
@@ -156,10 +157,11 @@ class parser {
     rtn = {
       vars : this._hasVariables(string_to_test).vars,
       helpers: this._hasHelperCall(string_to_test).helpers,
-      blocks: string_to_test.includes('{') ? "escaped" : "unescaped",
+      blocks: this._hasBlocks(string_to_test).vars,
       directives: this._hasDirectives(string_to_test).vars,
       operators: this._hasOperators(string_to_test).operators,
-      defaultParams: this._getBasicParameters(string_to_test).params,
+      array: this._hasArray(string_to_test).array,
+      stringParameters: this._getBasicParameters(string_to_test).params,
       currentStr: string_to_test
     }
 
@@ -290,12 +292,22 @@ class parser {
   }
   _hasBlocks(entry) {
     let bool = false;
+    let str_rt;
     let arr = entry.match(this.utils.unescapedBlocks)
     let arr2 = entry.match(this.utils.escapedBlocks)
+
+    // console.log(arr2)
     if(arr != null || arr2 != null) {
       bool = true;
     }
-    return {response : bool, vars : arr , currentStr : entry}
+
+    arr2 != null && arr === null  ? (str_rt = arr2) :
+    arr2 === null && arr === null ? (str_rt = null) :
+    arr2 != null && arr != null ? (str_rt = arr.concat(arr2)) :
+    arr2 === null && arr != null ? (str_rt = arr) : null;
+
+
+    return {response : bool, vars : str_rt , currentStr : entry}
   }
   _hasHelperCall(entry) {
     let bool = false;
@@ -307,10 +319,19 @@ class parser {
   }
   _getBasicParameters(entry) {
     let bool = false;
-    let arr = entry.match(this.utils.defaultParams)
+    let is_a_array_param = this._hasArray(entry).array;
+    let arr = entry.match(this.utils.stringParameters)
     if(arr != null) {
       bool = true;
     }
+    // console.log('_getBasicParameters', arr)
+    if(is_a_array_param != null) {
+      arr = arr.filter((item) => {
+        // console.log('item', item)
+        return is_a_array_param[0].includes(item) === false;
+      })
+    }
+
     return {response : bool, params : arr, currentStr : entry}
   }
   _hasOperators(entry) {
@@ -321,18 +342,27 @@ class parser {
     }
     if(entry.includes('[') && entry.includes(']')) {
       // cela ne peut pas être un opérateur, ici nous rentrons dans le cas d'un array
+      bool = false;
       arr = null;
     }
-    return {response : bool, operators : arr}
+    return {response : bool, operators : arr, currentStr : entry}
+  }
+  _hasArray(entry) {
+    let bool = false;
+    let arr = entry.match(this.utils.array)
+    if(arr != null) {
+      bool = true;
+    }
+    return {response : bool, array : arr, currentStr : entry}
   }
   normalizeParams(entry) {
     if(typeof entry === 'array') {
       entry.forEach((param) => {
-        return param.replace('.', '/').replace("'", '').replace("'", '')
+        return param.replace('.', '/').replace("'", '').replace("'", '').toString()
       })
     }
     else {
-      return entry.replace('.', '/').replace("'", '').replace("'", '')
+      return entry.replace('.', '/').replace("'", '').replace("'", '').toString()
     }
   }
   builder(cmd, code) {
