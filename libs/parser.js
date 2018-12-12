@@ -45,6 +45,12 @@ class parser {
 
     }
   }
+  /**
+   * getTemp - description
+   *
+   * @param  {string} name le nom de la directive à retrouver dans la variable temporaire de compilation.
+   * @return {object}  Retourne le pattern a utiliser pour matcher une chaine de caractère
+   */
   getTemp(name) {
     let rtn;
     // console.log('name temp', name)
@@ -56,15 +62,44 @@ class parser {
     }
     return rtn;
   }
+
+  /**
+   * _sendToTemp - Envoie un objet concernant une directive à envoyer dans la variable temporaire.
+   *
+   * @param  {object} obj l'objet à envoyer
+   * @return {object}     l'objet envoyé
+   */
   _sendToTemp(obj) {
     return this.temp.push(obj)
   }
+
+  /**
+   * getVars - Retournes les variables attachée à l'instance de la classe Renderer
+   *
+   * @return {object}
+   */
   getVars() {
     return this._bld.variables;
   }
+
+  /**
+   * evaluate - Renvoie le résultat entre deux valeurs. utilisée pour tester les conditions des blocks
+   *
+   * @param  {string} operator va matcher l'operateur à utiliser pour traiter l'évaluation entre les deux valeurs envoyée.
+   * @param  {string} val1
+   * @param  {string} val2
+   * @return {boolean}
+   */
   evaluate(operator, val1, val2) {
     return this.operators[operator](val1, val2);
   }
+
+  /**
+   * paternify_directives - Génères à la volée les Regex pour matcher les différentes directives dans le contenu.
+   *
+   * @param  {object} object l'objet Directive présent en haut de ce fichier.
+   * @return {array}        retourne un Array contenant une liste d'objet avec le type, le nom de la directive , et le pattern Regex à utiliser.
+   */
   paternify_directives(object) {
     let resultArr = new Array();
     for (var directive in object) {
@@ -95,6 +130,16 @@ class parser {
     }
     return resultArr;
   }
+
+  /**
+   * normalizerBothDirective - Cette fonction sert gérer le cas suivant l'exemple ci dessous :
+   *
+   * exemple : @section('title', 'test') or @section('title') title @endsection
+   *
+   * @param  {string} str            la chaine de caractère à évaluer
+   * @param  {string} directive_name le nom de la directive à matcher suivants les deux cas
+   * @return {array}                Retourne un array de directives prêtes pour le renderer
+   */
   normalizerBothDirective(str, directive_name) {
 
     var value_to_return = new Array();
@@ -127,6 +172,18 @@ class parser {
 
     return value_to_return;
   }
+
+  /**
+   * getContents - Retourne le contenu entre les balises des sections ou le second paramètres selon le cas ci dessous :
+   *
+   * exemple : @section('title',  contenu ===> 'test') or @section('title') contenu ===> title <=== contenu  @endsection
+   *
+   * @param  {string} entry   chaine de cractère à tester
+   * @param  {string} pattern le Pattern à checker
+   * @return {string}         Le contenu intégral entre les balises de directives propres à Blade.
+   *
+   * @todo => faire une autoreconnaissance du pattern à utiliser !
+   */
   getContents(entry, pattern) {
     let rtn = '';
     var params = this.getParams(entry);
