@@ -148,6 +148,36 @@ class parser {
   getParams(entry) {
     return this._parseParams(entry);
   }
+  getArrayParams(entry) {
+    return this._parseArray(entry);
+  }
+  _parseArray(entry) {
+    let content = new Array();
+    let array = entry[0]
+    let slitting;
+    let obj;
+    if(array.indexOf(',') != -1) {
+      // console.log('boucle')
+      slitting = array.split(',');
+      slitting.forEach((s, index) => {
+        obj = new Object();
+        let subs = s.split('=>');
+        obj.var = this.unformat(subs[0]);
+        obj.value = this.unformat(subs[1]);
+        content[index] = obj;
+      })
+    }
+    else {
+      // console.log('no boucle')
+      slitting = array.split('=>');
+      obj = new Object();
+      obj.var = this.unformat(slitting[0]);
+      obj.value = this.unformat(slitting[1]);
+      content.push(obj);
+
+    }
+    return content;
+  }
   _parseParams(entry) {
     // console.log('entry point parse params', entry)
     let rtn;
@@ -364,6 +394,16 @@ class parser {
     else {
       return entry.replace('.', '/').replace("'", '').replace("'", '').toString()
     }
+  }
+  formatForRegex(entry) {
+    let format = entry.replace('[', '\\[').replace("]", '\\]').replace("$", '\\$').replace("> $", '> \\$').replace("(", '\\(').replace(")", '\\)');
+    // console.log('format', format)
+    return format
+  }
+  unformat(entry) {
+    let format = entry.replace('[', '').replace("]", '').replace("$", '$').replace("> $", '> $').replace("(", '(').replace(")", ')').replace("\'", '').replace("\'", '').trim();
+    // console.log('format', format)
+    return format
   }
   builder(cmd, code) {
     switch (cmd) {

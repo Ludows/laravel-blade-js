@@ -228,8 +228,8 @@ var directives = {
   includeWhen: {
     type: 'inline',
     render: (arr, parser) => {
-      console.log('includeWhen', arr)
-        console.log('includeWhen length', arr.length)
+      // console.log('includeWhen', arr)
+        // console.log('includeWhen length', arr.length)
       arr.forEach((includeWhen) => {
         // console.log('component', arr)
         let includeWhen_rt;
@@ -238,23 +238,32 @@ var directives = {
         console.log('params includeWhen', params)
         let fullPath = path.join(parser._bld.options.views, parser.normalizeParams(params.stringParameters[0])+parser._bld.options.extension);
         // console.log('fullPath', fullPath)
-        // var existPath = fs.existsSync(fullPath)
-        // // console.log('test', test)
-        // if(existPath === true) {
-        //   includeWhen_rt = fs.readFileSync(fullPath)
-        //   // console.log('test_in_parent_view', test_in_parent_view)
-        //   let name = params.stringParameters[0].replace('.', '\\.').replace("'", '').replace("'", '');
-        //   var test_in_parent_view = parser.builder('find', '@includeIf\\(\''+ name +'\'\\)' )
-        //   if(test_in_parent_view != null) {
-        //     parser.builder('replace', {block: test_in_parent_view[0], to: includeWhen_rt.toString()})
-        //   }
-        //   else {
-        //     parser.handleError();
-        //   }
-        // }
-        // else {
-        //   parser.builder('replace', {block: includeWhen, to: ''})
-        // }
+        var existPath = fs.existsSync(fullPath)
+
+        let vars = parser.getVars();
+        let isBool = parser._renderVars(params.vars[0]);
+
+        // console.log('test', test)
+          if(existPath === true && isBool === true) {
+            includeWhen_rt = fs.readFileSync(fullPath)
+            var test_in_parent_view = parser.builder('find', parser.formatForRegex(includeWhen) )
+            console.log('includeWhen_rt', includeWhen_rt.toString())
+
+            var arrParams = parser.getArrayParams(params.array);
+
+            console.log('test_in_parent_view', test_in_parent_view)
+
+            if(test_in_parent_view != null) {
+              parser.builder('replace', {block: test_in_parent_view[0], to: includeWhen_rt.toString()})
+            }
+            else {
+              parser.handleError();
+            }
+          }
+          else {
+            parser.builder('replace', {block: includeWhen, to: ''})
+          }
+
 
       })
     }
